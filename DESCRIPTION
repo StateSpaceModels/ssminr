@@ -1,0 +1,8 @@
+Package: SSMinR
+Title: SSMinR
+Version: 0.1
+Authors@R: c(person(given="Anton", family="Camacho",email="ntncmch@gmail.com",role=c("aut","cre")))
+Description: R interface to SSM
+Depends: R (>= 3.1.2)
+License: GPL-2
+LazyData: true
