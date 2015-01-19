@@ -30,4 +30,67 @@ r2ssm_prior <- function(prior) {
 	return(prior_formated)
 }
 
+#' @param theta a vector
+#' @param covmat a matrix 
+#' @name r2ssm
+#' @aliases r2ssm_resources
+r2ssm_resources <- function(theta, covmat){
+
+	covmat_list <- as.list(as.data.frame(covmat))
+
+	for(i in names(theta)){
+		x <- covmat_list[[i]]
+		x <- as.list(x)
+		names(x) <- rownames(covmat)	
+		covmat_list[[i]] <- x[x!=0] 
+	}
+
+	resources_formated <- list(
+		list(name="values",description="initial values for the parameters",data=as.list(theta)),
+		list(name="covariance",description="covariance matrix",data=covmat_list)
+		)
+
+	return(resources_formated)
+
+}
+
+
+#' @param pop_name character
+#' @param state_variables character vector, name of all state variables 
+#' @param remainder character, name of the state variable considered as a remainder.
+#' @param pop_size character, name of the parameter corresponding to the population size. Required if \code{remainder} is provided.
+#' @name r2ssm
+#' @aliases r2ssm_populations
+r2ssm_populations <- function(pop_name, state_variables, remainder=NULL, pop_size=NULL) {
+
+	pop_formated <- list(name=pop_name, composition=state_variables)
+
+	if(!is.null(remainder)){
+		pop_formated$remainder <- list(name=remainder,pop_size=pop_size)
+	}
+
+	return(list(pop_formated))
+}
+
+
+#' @param observation list
+#' @param start_date date
+#' @name r2ssm
+#' @aliases r2ssm_observation
+r2ssm_observation <- function(observation, start_date) {
+
+	state_obs <- sprintf("%s_obs",observation$state)
+
+	if(is.null(observation$overdispersion)){
+		# use poisson
+		ans <- list(name=state_obs,start=as.character(start_date),distribution="poisson",mean=sprintf("%s * (%s)", observation$reporting, observation$state))
+	} else {
+		# use normal discretized
+		ans <- list(name=state_obs,start=as.character(start_date),distribution="discretized_normal",mean=sprintf("%s * (%s)", observation$reporting, observation$state), sd = sprintf("sqrt(%s * ( 1.0 - %s ) * (%s) + pow(%s * %s * (%s),2))", observation$reporting, observation$reporting,  observation$state, observation$reporting, observation$overdispersion, observation$state))		
+	}
+
+	return(ans)
+
+}
+
 
