@@ -4,8 +4,8 @@
 \alias{build_ssm}
 \title{Build model in SSM}
 \usage{
-build_ssm(model, pop_name, data, start_date, priors, inputs, reactions,
-  observations, remainder = NULL, pop_size = NULL, diffed = NULL)
+build_ssm(model, pop_name, data, start_date, inputs, reactions, observations,
+  remainder = NULL, pop_size = NULL, diffed = NULL)
 }
 \arguments{
 \item{model}{character, full path to model directory.}
@@ -19,8 +19,6 @@ that contains the observed states and which are named according to the conventio
 data are represented by \code{NA}.}
 
 \item{start_date}{character, starting date of model integration (in \code{YYYY-MM-DD} format).}
-
-\item{priors}{list of priors.}
 
 \item{inputs}{list of inputs.}
 
