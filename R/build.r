@@ -9,7 +9,6 @@
 #' \code{x_obs}, where \code{x} is the name of the oberved state in the model. Missing
 #' data are represented by \code{NA}.
 #' @param start_date character, starting date of model integration (in \code{YYYY-MM-DD} format).
-#' @param priors list of priors.
 #' @param inputs list of inputs.
 #' @param reactions list of reactions.
 #' @param observations list of observations.
@@ -18,7 +17,7 @@
 #' @export
 #' @import dplyr rjson
 #' @importFrom plyr l_ply llply
-build_ssm <- function(model, pop_name, data, start_date, priors, inputs, reactions, observations, remainder=NULL, pop_size=NULL, diffed=NULL) {
+build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, observations, remainder=NULL, pop_size=NULL, diffed=NULL) {
 
 	# list directories
 	if(!file.exists(model)){
@@ -54,45 +53,52 @@ build_ssm <- function(model, pop_name, data, start_date, priors, inputs, reactio
 
 	time_series <- setdiff(names(data),"date")
 	# link to ssm.json
-	data_formated <- plyr::llply(time_series, function(x) {
+	ssm_data <- plyr::llply(time_series, function(x) {
 		list(name=x,require=list(path=data_path,fields=c("date",x)))		
 	})
 	
-	# CREATE PRIORS ---------------------------------------------------------------------
+	# WRITE PRIORS ---------------------------------------------------------------------	
+	# and return prior list for R
+	priors <- plyr::llply(inputs, function(input){
 
-	# write prior
-	for(theta_name in names(priors)){
+		if(!is.null(input$prior)){
 
-		x <- priors[[theta_name]]
-		x <- r2ssm_prior(x)
-		write(rjson::toJSON(x),file=file.path(dir_priors,paste0(theta_name,".json")))
+			input$prior %>% r2ssm_prior %>% rjson::toJSON(.) %>% write(file=file.path(dir_priors,paste0(input$name,".json")))
 
-	}
+			if(input$prior$dist!="dirac"){
+				prior <- input$prior
+				prior$name <- input$name
+				return(prior)	
+			}
+			
+		}
+	}) %>% remove_null
 
 	# CREATE INPUTS ---------------------------------------------------------------------
 
-	inputs_formated <- plyr::llply(names(inputs),function(input_name) {
-
-		input <- c(name=input_name, inputs[[input_name]])
+	ssm_inputs <- plyr::llply(inputs,function(input) {
 
 		if(!is.null(input$prior)){
-			prior_name <- input$prior
 			input$prior <- NULL
-			input$require <- list(name=prior_name,path=file.path(dir_priors,paste0(prior_name,".json")))
+			input$require <- list(name=input$name,path=file.path(dir_priors,paste0(input$name,".json")))
 		}
 
-		return(input)
+		# remove value
+		input$value <- NULL
+
+		# remove all NULL
+		input %>% remove_null %>% return
 	})
 
 	# CREATE PROCESS ---------------------------------------------------------------------
 
 	# populations
 	state_variables <- plyr::llply(reactions, function(x) {c(x$from,x$to)}) %>% unlist %>% unique
-	populations_formated <- r2ssm_populations(pop_name=pop_name, state_variables=state_variables, remainder=remainder, pop_size=pop_size) 
+	ssm_populations <- r2ssm_populations(pop_name=pop_name, state_variables=state_variables, remainder=remainder, pop_size=pop_size) 
 
 	# CREATE OBSERVATIONS ---------------------------------------------------------------------
 
-	observations_formated <- plyr::llply(observations, r2ssm_observation, start_date=start_date)
+	ssm_observations <- plyr::llply(observations, r2ssm_observation, start_date=start_date)
 
 	# CREATE diffed ---------------------------------------------------------------------
 	diffed_theta <- diffed
@@ -119,21 +125,25 @@ build_ssm <- function(model, pop_name, data, start_date, priors, inputs, reactio
 			dispersion <- list(list("vol"))
 		}
 
-		diffed_formated <- list(drift=drift, dispersion=dispersion)
-		# cat(toJSON(diffed_formated))
+		ssm_sde <- list(drift=drift, dispersion=dispersion)
+		# cat(toJSON(ssm_sde))
 
 	}
 
 	# RESOURCES ---------------------------------------------------------------------
 
-	# read prior slot of ssm_inputs for theta_names
-	# look at theta_priors, remove if dirac
-	theta_dist <- unlist(llply(priors, function(x) {x$dist}))
-	theta_estimated_names <- names(priors)[theta_dist!="dirac"]
+	# check which values are defined in input
+	input_values <- sapply(inputs, function(input) {input$value})
+	names(input_values) <- get_name(inputs)
+	
+	# extract theta from inputs: only inputs with a prior
+	init_theta <- sample_from_priors(priors) 
 
-	init_theta <- sample_from_prior(priors, theta_estimated_names) 
-	names(init_theta) <- theta_estimated_names
+	# check if value is provided, if so set init
+	theta_values <- input_values[names(init_theta)] %>% unlist
+	init_theta[names(theta_values)] <- theta_values
 
+	# default covmat
 	init_covmat <- diag(init_theta/10)
 	colnames(init_covmat) <- rownames(init_covmat) <- names(init_theta)
 
@@ -141,9 +151,9 @@ build_ssm <- function(model, pop_name, data, start_date, priors, inputs, reactio
 
 	# CREATE SSM FILES ---------------------------------------------------------------------
 
-	ssm_json <- list(data=data_formated, inputs=inputs_formated, populations=populations_formated, reactions=reactions, observations=observations_formated) 
+	ssm_json <- list(data=ssm_data, inputs=ssm_inputs, populations=ssm_populations, reactions=reactions, observations=ssm_observations) 
 	if(!is.null(diffed)){
-		ssm_json$sde <- diffed_formated
+		ssm_json$sde <- ssm_sde
 	} 
 
 	theta_json <- list(resources=resources_formated)
