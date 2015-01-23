@@ -19,7 +19,7 @@ diffusion(volatility, transformation = c("none", "log"))
 In SSM one can define stochastic differential equations on input parameters.
 }
 \examples{
-# define a diffusion on log(beta) with volatility parameter "vol"
+# define a diffusion on log(beta) with volatility parameter "vol"	
 input(name="beta", description="effective contact rate",transformation="R0/d_infectious", sde=diffusion(volatility="vol", transformation="log"))
 }
 

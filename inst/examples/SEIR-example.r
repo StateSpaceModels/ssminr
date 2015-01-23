@@ -28,8 +28,8 @@ SEIR_observations <- list(
 data(ebola_2014)
 
 # the model will be created in the default temporary directory. Change the path to "wherever/you/want".
-# dir_model <- tempdir()
-dir_model <- path.expand("~/Desktop")
+dir_model <- tempdir()
+# dir_model <- path.expand("~/Desktop")
 
 build_ssm(
 	model=file.path(dir_model,"SEIR_ssm"),

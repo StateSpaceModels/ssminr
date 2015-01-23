@@ -12,7 +12,6 @@
 #' @param inputs list of inputs.
 #' @param reactions list of reactions.
 #' @param observations list of observations.
-#' @param diffed character, parameter names that follow a diffusion
 #' @inheritParams r2ssm
 #' @export
 #' @import dplyr rjson
