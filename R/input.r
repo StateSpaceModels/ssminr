@@ -6,12 +6,20 @@
 #' @param value numeric or character, define the value of the input
 #' @param prior define the prior of the input, as returned by a \code{\link{prior}} helper
 #' @param transformation define the transformation of the input (see example)
+#' @param sde define a stochastic differential equation on the input (see example)
+#' @param tag character, tag for specific inputs. Set to one among:
+# \itemize{
+# 	\item "remainder" if the population size is assumed constant, the tagged state variable will be used as a remainder (see example)
+# 	\item "pop_size"  if the population size is assumed constant, the tagged parameter will be used to set the population size
+# }
 #' @export
 #' @seealso \code{\link{prior}}
 #' @examples \dontrun{
 #'  TODO
 #'}
-input <- function(name, description=NULL, value=NULL, prior=NULL, transformation=NULL) {
+input <- function(name, description=NULL, value=NULL, prior=NULL, transformation=NULL, sde=NULL, tag=c("none","remainder","pop_size")) {
+
+	tag <- match.arg(tag)
 
 	# TODO do some check here
 
@@ -22,6 +30,6 @@ input <- function(name, description=NULL, value=NULL, prior=NULL, transformation
 
 	}
 
-	list(name=name, description=description, value=value, prior=prior, transformation=transformation)
+	list(name=name, description=description, value=value, prior=prior, transformation=transformation, sde=sde, tag=tag)
 	
 }

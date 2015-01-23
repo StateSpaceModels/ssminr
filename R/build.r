@@ -18,7 +18,7 @@
 #' @import dplyr rjson
 #' @importFrom plyr l_ply llply
 #' @example inst/examples/SEIR-example.r
-build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, observations, remainder=NULL, pop_size=NULL, diffed=NULL) {
+build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, observations) {
 
 	# list directories
 	if(!file.exists(model)){
@@ -76,6 +76,8 @@ build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, obse
 	}) %>% remove_null
 
 	# CREATE INPUTS ---------------------------------------------------------------------
+	remainder_state <- NULL
+	pop_size_theta <- NULL
 
 	ssm_inputs <- plyr::llply(inputs,function(input) {
 
@@ -84,47 +86,88 @@ build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, obse
 			input$require <- list(name=input$name,path=file.path(dir_priors,paste0(input$name,".json")))
 		}
 
-		# remove value
+		# check tag
+		if(input$tag=="remainder"){
+			remainder_state <<- input$name
+		}
+
+		if(input$tag=="pop_size"){
+			pop_size_theta <<- input$name
+		}
+
+		# remove value and tag
 		input$value <- NULL
+		input$tag <- NULL
 
 		# remove all NULL
 		input %>% remove_null %>% return
 	})
 
+	# remove remainder
+	if(!is.null(remainder_state)){
+		i_remainder <- which(get_name(ssm_inputs)!=remainder_state)
+		ssm_inputs <- ssm_inputs[i_remainder]
+	}
+
 	# CREATE PROCESS ---------------------------------------------------------------------
 
 	# populations
 	state_variables <- plyr::llply(reactions, function(x) {c(x$from,x$to)}) %>% unlist %>% unique
-	ssm_populations <- r2ssm_populations(pop_name=pop_name, state_variables=state_variables, remainder=remainder, pop_size=pop_size) 
+	ssm_populations <- r2ssm_populations(pop_name=pop_name, state_variables=state_variables, remainder=remainder_state, pop_size=pop_size_theta) 
 
 	# CREATE OBSERVATIONS ---------------------------------------------------------------------
 
-	# SSM currently need the same start time for all observations.
+	# SSM currently needs the same start time for all observations.
 	ssm_observations <- plyr::llply(observations, function(obs) {obs$start=as.character(start_date); return(obs)})
 
-	# CREATE diffed ---------------------------------------------------------------------
-	diffed_theta <- diffed
+	# CREATE SDE ON INPUTS ---------------------------------------------------------------------
+
+	# extract inputs with sde
+	sde <- sapply(inputs, function(input) {
+		# add input name and return
+		x <- input$sde
+		if(!is.null(x)){
+			x$name <- input$name			
+		}
+		return(x)
+	}) %>% remove_null
 	
-	if(!is.null(diffed)){
+	if((n_sde <- length(sde))){
 
-		dispersion <- matrix(0, nrow=length(diffed_theta), ncol=length(diffed_theta), dimnames=list(diffed_theta,diffed_theta))
+		# drift
+		drift <- llply(sde, function(x) {
 
-		diag(dispersion) <- "vol"
-		
-		drift <- llply(diffed_theta, function(x) {
+			tmp <- list(name=x$name, f=0)
 
-			if(str_detect(x,"beta")){				
-				return(list(name=x, f=0, transformation=sprintf("log(%s)",x)))
+			if(x$transformation!="none"){
+
+				tmp$transformation <- switch(x$transformation,
+					"log"=sprintf("log(%s)",x$name)
+					)
+
 			}
 
+			return(tmp)
 		})
 
-		colnames(dispersion) <- NULL
-		dispersion <- as.data.frame(t(dispersion))
-		colnames(dispersion) <- NULL		
+		# dispersion matrix; only diagonal
+		if(n_sde>1){
 
-		if(all(dim(dispersion)==c(1,1))){
-			dispersion <- list(list("vol"))
+			input_sde <- get_name(sde)
+
+			dispersion <- matrix(0, nrow=n_sde, ncol=n_sde, dimnames=list(input_sde,input_sde))
+
+			diag(dispersion) <- sapply(sde, function(x) {x$volatility})
+
+			colnames(dispersion) <- NULL
+			dispersion <- as.data.frame(t(dispersion))
+			colnames(dispersion) <- NULL		
+
+
+		} else {
+
+			dispersion <- list(list(sde[[1]]$volatility))
+
 		}
 
 		ssm_sde <- list(drift=drift, dispersion=dispersion)
@@ -154,7 +197,7 @@ build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, obse
 	# CREATE SSM FILES ---------------------------------------------------------------------
 
 	ssm_json <- list(data=ssm_data, inputs=ssm_inputs, populations=ssm_populations, reactions=reactions, observations=ssm_observations) 
-	if(!is.null(diffed)){
+	if(n_sde){
 		ssm_json$sde <- ssm_sde
 	} 
 

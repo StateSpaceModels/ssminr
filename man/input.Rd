@@ -5,7 +5,8 @@
 \title{Create SSM input}
 \usage{
 input(name, description = NULL, value = NULL, prior = NULL,
-  transformation = NULL)
+  transformation = NULL, sde = NULL, tag = c("none", "remainder",
+  "pop_size"))
 }
 \arguments{
 \item{name}{character, name of the input}
@@ -17,6 +18,10 @@ input(name, description = NULL, value = NULL, prior = NULL,
 \item{prior}{define the prior of the input, as returned by a \code{\link{prior}} helper}
 
 \item{transformation}{define the transformation of the input (see example)}
+
+\item{sde}{define a stochastic differential equation on the input (see example)}
+
+\item{tag}{character, tag for specific inputs. Set to one among:}
 }
 \description{
 Create an input parameter for SSM

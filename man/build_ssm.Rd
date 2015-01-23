@@ -4,8 +4,7 @@
 \alias{build_ssm}
 \title{Build model in SSM}
 \usage{
-build_ssm(model, pop_name, data, start_date, inputs, reactions, observations,
-  remainder = NULL, pop_size = NULL, diffed = NULL)
+build_ssm(model, pop_name, data, start_date, inputs, reactions, observations)
 }
 \arguments{
 \item{model}{character, full path to model directory.}
@@ -26,10 +25,6 @@ data are represented by \code{NA}.}
 
 \item{observations}{list of observations.}
 
-\item{remainder}{character, name of the state variable considered as a remainder.}
-
-\item{pop_size}{character, name of the parameter corresponding to the population size. Required if \code{remainder} is provided.}
-
 \item{diffed}{character, parameter names that follow a diffusion}
 }
 \description{
@@ -37,7 +32,8 @@ This function build and compile the model in SSM.
 }
 \examples{
 SEIR_inputs <- list(
-	input(name="N",description="population size", value=1e7),
+	input(name="N",description="population size", value=1e7, tag="pop_size"),
+	input(name="S", description="initial number of susceptible", tag="remainder"),
 	input(name="R", description="initial number of recovered", value=0),
 	input(name="d_incubation", description="incubation period", value=10),
 	input(name="d_infectious", description="infectious period", value=10),
@@ -45,6 +41,7 @@ SEIR_inputs <- list(
 	input(name="R0", description="basic reproduction number", prior=unif(0,5)), 
 	input(name="rho", description="reporting rate", prior=unif(0,1)),
 	input(name="phi", description="overdispersion", prior=unif(0,1)),
+	input(name="vol", description="volatility on log(beta)", prior=unif(0,1)),
 	input(name="E", description="initial number incubating",transformation="I*d_incubation/d_infectious"),
 	input(name="beta", description="effective contact rate",transformation="R0/d_infectious"),
 	input(name="epsilon", description="onset of infection rate",transformation="1/d_incubation"),
@@ -74,10 +71,7 @@ build_ssm(
 	start_date=min(liberia1$date) - 7, # start model integration 7 days before the first observation
 	inputs=SEIR_inputs,
 	reactions=SEIR_reactions,
-	observations=SEIR_observations,
-	remainder="S",
-	pop_size="N"
+	observations=SEIR_observations
 	)
-
 }
 
