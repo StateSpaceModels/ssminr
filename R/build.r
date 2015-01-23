@@ -17,6 +17,7 @@
 #' @export
 #' @import dplyr rjson
 #' @importFrom plyr l_ply llply
+#' @example inst/examples/SEIR-example.r
 build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, observations, remainder=NULL, pop_size=NULL, diffed=NULL) {
 
 	# list directories
@@ -98,7 +99,8 @@ build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, obse
 
 	# CREATE OBSERVATIONS ---------------------------------------------------------------------
 
-	ssm_observations <- plyr::llply(observations, r2ssm_observation, start_date=start_date)
+	# SSM currently need the same start time for all observations.
+	ssm_observations <- plyr::llply(observations, function(obs) {obs$start=as.character(start_date); return(obs)})
 
 	# CREATE diffed ---------------------------------------------------------------------
 	diffed_theta <- diffed

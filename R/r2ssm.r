@@ -73,24 +73,3 @@ r2ssm_populations <- function(pop_name, state_variables, remainder=NULL, pop_siz
 }
 
 
-#' @param observation list
-#' @param start_date date
-#' @name r2ssm
-#' @aliases r2ssm_observation
-r2ssm_observation <- function(observation, start_date) {
-
-	state_obs <- sprintf("%s_obs",observation$state)
-
-	if(is.null(observation$overdispersion)){
-		# use poisson
-		ans <- list(name=state_obs,start=as.character(start_date),distribution="poisson",mean=sprintf("%s * (%s)", observation$reporting, observation$state))
-	} else {
-		# use normal discretized
-		ans <- list(name=state_obs,start=as.character(start_date),distribution="discretized_normal",mean=sprintf("%s * (%s)", observation$reporting, observation$state), sd = sprintf("sqrt(%s * ( 1.0 - %s ) * (%s) + pow(%s * %s * (%s),2))", observation$reporting, observation$reporting,  observation$state, observation$reporting, observation$overdispersion, observation$state))		
-	}
-
-	return(ans)
-
-}
-
-

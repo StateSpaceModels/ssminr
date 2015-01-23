@@ -20,16 +20,20 @@ SEIR_reactions <- list(
 	)
 
 SEIR_observations <- list(
-	list(state="incidence", reporting="rho", overdispersion="phi")
+	poisson_obs(state="incidence", reporting="rho")
 	)
 
 data(ebola_2014)
 
+# the model will be created in the default temporary directory. Change the path to "wherever/you/want".
+# dir_model <- tempdir()
+dir_model <- path.expand("~/Desktop")
+
 build_ssm(
-	model=path.expand("~/Desktop/test_SSMinR"),
+	model=file.path(dir_model,"SEIR_ssm"),
 	pop_name="Liberia",
 	data=liberia1,
-	start_date=min(liberia1$date) - 7,
+	start_date=min(liberia1$date) - 7, # start model integration 7 days before the first observation
 	inputs=SEIR_inputs,
 	reactions=SEIR_reactions,
 	observations=SEIR_observations,

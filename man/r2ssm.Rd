@@ -2,7 +2,6 @@
 % Please edit documentation in R/r2ssm.r
 \name{r2ssm}
 \alias{r2ssm}
-\alias{r2ssm_observation}
 \alias{r2ssm_populations}
 \alias{r2ssm_prior}
 \alias{r2ssm_resources}
@@ -14,8 +13,6 @@ r2ssm_resources(theta, covmat)
 
 r2ssm_populations(pop_name, state_variables, remainder = NULL,
   pop_size = NULL)
-
-r2ssm_observation(observation, start_date)
 }
 \arguments{
 \item{prior}{a list}
@@ -31,10 +28,6 @@ r2ssm_observation(observation, start_date)
 \item{remainder}{character, name of the state variable considered as a remainder.}
 
 \item{pop_size}{character, name of the parameter corresponding to the population size. Required if \code{remainder} is provided.}
-
-\item{observation}{list}
-
-\item{start_date}{date}
 }
 \description{
 Internal functions to convert R object into SSM
