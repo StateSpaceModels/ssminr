@@ -29,4 +29,7 @@ dirac(value)
 \description{
 Distributions supported by SSM to define priors
 }
+\seealso{
+\code{\link{sample_from_prior}}
+}
 
