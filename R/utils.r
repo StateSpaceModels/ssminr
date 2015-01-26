@@ -7,6 +7,13 @@ remove_null <- function(x) {
 	return(x)
 }
 
+clean_args <- function(x) {
+
+	x <- x %>% remove_null %>% .[!sapply(.,is.logical) | as.logical(.)] %>% unlist %>% str_replace("TRUE","")
+	
+	return(x)
+}
+
 
 get_name <- function(x) {
 
@@ -15,3 +22,17 @@ get_name <- function(x) {
 	}
 
 }
+
+# get_args <- function(args_names) {
+
+# 	browser()
+
+# 	arg_names <- formals(fun=sys.function(which=2)) %>% names
+
+# 	env <- parent.frame()
+
+# 	args <- sapply(arg_names, get, envir=env)
+
+# 	return(args)
+
+# }

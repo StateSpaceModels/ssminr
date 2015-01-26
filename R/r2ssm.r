@@ -73,3 +73,17 @@ r2ssm_populations <- function(pop_name, state_variables, remainder=NULL, pop_siz
 }
 
 
+
+r2ssm_args <- function(...) {
+
+	# remove FALSE, NULL and replace TRUE by empty character
+	args <- as.list(...) %>% clean_args
+
+	return(paste0("--",names(args)," ",args, collapse=" "))
+
+}
+
+
+
+
+
