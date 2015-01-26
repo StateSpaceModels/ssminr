@@ -3,6 +3,7 @@
 #'Distributions supported by SSM to define priors
 #' @inheritParams stats::dunif
 #' @export
+#' @seealso \code{\link{sample_from_prior}}
 #' @name prior
 #' @aliases unif
 unif <- function(min, max){
@@ -33,7 +34,13 @@ dirac <- function(value){
 }
 
 
-sample_from_priors <- function(priors, theta_names=NULL) {
+#'Sample from prior
+#'
+#'Generate a sample from prior density distribution.
+#' @param priors a list of priors
+#' @param  theta_names character, names of the parameters sampled. If \code{NULL} (default) all parameters are sampled.
+#' @export
+sample_from_prior <- function(priors, theta_names=NULL) {
 
 	names(priors) <- get_name(priors)
 
