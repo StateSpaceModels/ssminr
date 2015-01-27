@@ -5,11 +5,14 @@
 \alias{r2ssm_populations}
 \alias{r2ssm_prior}
 \alias{r2ssm_resources}
+\alias{ssm2r_resources}
 \title{Convert R object into SSM object}
 \usage{
 r2ssm_prior(prior)
 
 r2ssm_resources(theta, covmat)
+
+ssm2r_resources(ssm_theta)
 
 r2ssm_populations(pop_name, state_variables, remainder = NULL,
   pop_size = NULL)
@@ -20,6 +23,8 @@ r2ssm_populations(pop_name, state_variables, remainder = NULL,
 \item{theta}{a vector}
 
 \item{covmat}{a matrix}
+
+\item{ssm_theta}{a list (usually a theta.json of SSM parsed by \code{\link[rjson]{fromJSON}})}
 
 \item{pop_name}{character}
 
