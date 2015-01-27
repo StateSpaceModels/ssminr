@@ -17,9 +17,9 @@ unif <- function(min, max){
 #' @import truncnorm
 #' @name prior
 #' @aliases truncnorm
-truncnorm <- function(a, b, mean, sd){
+truncnorm <- function(a=-Inf, b=Inf, mean, sd){
 
-	return(list(dist="truncnorm",args=list(a = 0, b = 1, mean=0.6, sd=0.1)))
+	return(list(dist="truncnorm",args=list(a = a, b = b, mean=mean, sd=sd)))
 
 }
 

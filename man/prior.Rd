@@ -9,7 +9,7 @@
 \usage{
 unif(min, max)
 
-truncnorm(a, b, mean, sd)
+truncnorm(a = -Inf, b = Inf, mean, sd)
 
 dirac(value)
 }
