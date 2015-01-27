@@ -1,7 +1,7 @@
 #'Build model in SSM
 #'
-#'This function build and compile the model in SSM. 
-#' @param model character, full path to model directory.
+#'This function build and compile a model in SSM. 
+#' @param model_path character, full path to model directory.
 #' @param pop_name character, name of the population.
 #' @param data data.frame, must have a column named \code{date} that contains 
 #' the observation dates (in \code{YYYY-MM-DD} format); and one or more numeric column(s) 
@@ -13,21 +13,21 @@
 #' @param reactions list of reactions.
 #' @param observations list of observations.
 #' @inheritParams r2ssm
+#' @return \code{ssm} object
 #' @export
 #' @import dplyr rjson
 #' @importFrom plyr l_ply llply
 #' @example inst/examples/SEIR-example.r
-build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, observations) {
+new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, observations) {
 
 	# list directories
-	if(!file.exists(model)){
-		dir.create(model, recursive=TRUE)
+	if(!file.exists(model_path)){
+		dir.create(model_path, recursive=TRUE)
 	}
 
 	start_date <- as.Date(start_date)
 
-
-	wd <- setwd(model)
+	wd <- setwd(model_path)
 	# relative directories
 	dir_data <- "data"
 	dir_priors <- "priors"
@@ -191,7 +191,8 @@ build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, obse
 	init_covmat <- diag(init_theta/10)
 	colnames(init_covmat) <- rownames(init_covmat) <- names(init_theta)
 
-	resources_formated <- r2ssm_resources(init_theta, init_covmat) 
+	ssm_theta <- r2ssm_resources(init_theta, init_covmat) 
+	write(rjson::toJSON(ssm_theta),file=file.path(model_path,"theta.json"))
 
 	# CREATE SSM FILES ---------------------------------------------------------------------
 
@@ -200,24 +201,27 @@ build_ssm <- function(model, pop_name, data, start_date, inputs, reactions, obse
 		ssm_json$sde <- ssm_sde
 	} 
 
-	theta_json <- list(resources=resources_formated)
-
-	write(rjson::toJSON(ssm_json),file=file.path(model,"ssm.json"))
-	write(rjson::toJSON(theta_json),file=file.path(model,"theta.json"))
+	write(rjson::toJSON(ssm_json),file=file.path(model_path,"ssm.json"))
 
 	# COMPILE MODEL ---------------------------------------------------------------------
 
-	cmd <- sprintf("ssm -s %s/ssm.json",model)
+	cmd <- sprintf("ssm -s %s/ssm.json",model_path)
 	system(cmd)
 
-	# SAVE MODEL IN R ---------------------------------------------------------------------
+	# RETURN SSM ---------------------------------------------------------------------
 	
-	ssm_model <- list(data=data, inputs=inputs, state_variables=state_variables, theta=list(init=init_theta, covmat=init_covmat), theta_priors=priors)
-	saveRDS(ssm_model,file.path(model,"ssm_model.rds"))
-
 	setwd(wd)
 
-
+	return(structure(list(
+		model_path = model_path,
+		data = data,
+		inputs = inputs,
+		state_variables = state_variables,
+		theta = init_theta,
+		covmat = init_covmat,
+		summary = NULL,
+		priors = priors),
+	class="ssm"))
 }
 
 
