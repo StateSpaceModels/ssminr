@@ -28,11 +28,11 @@ SEIR_observations <- list(
 data(ebola_2014)
 
 # the model will be created in the default temporary directory. Change the path to "wherever/you/want".
-dir_model <- tempdir()
+# dir_model <- tempdir()
 dir_model <- path.expand("~/Desktop")
 
-build_ssm(
-	model=file.path(dir_model,"SEIR_ssm"),
+my_ssm <- new_ssm(
+	model_path=file.path(dir_model,"SEIR_ssm"),
 	pop_name="Liberia",
 	data=liberia1,
 	start_date=min(liberia1$date) - 7, # start model integration 7 days before the first observation
@@ -41,7 +41,8 @@ build_ssm(
 	observations=SEIR_observations
 	)
 
-# simulate
-simul(model=file.path(dir_model,"SEIR_ssm"), id=0) %>% simul(id=1)
+# simplex + mcmc
+my_ssm_fited <- my_ssm %>% simplex(iter=1000) %>% pmcmc(iter=1000)
+
 
 
