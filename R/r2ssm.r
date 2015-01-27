@@ -50,7 +50,38 @@ r2ssm_resources <- function(theta, covmat){
 		list(name="covariance",description="covariance matrix",data=covmat_list)
 		)
 
-	return(resources_formated)
+	return(list(resources=resources_formated))
+
+}
+
+
+
+
+#' @param ssm_theta a list (usually a theta.json of SSM parsed by \code{\link[rjson]{fromJSON}})
+#' @name r2ssm
+#' @aliases ssm2r_resources
+ssm2r_resources <- function(ssm_theta){
+
+	resources <- ssm_theta$resources
+
+	# theta
+	theta <- resources[[1]]$data %>% unlist
+
+	# covmat
+	covmat <- resources[[2]]$data %>% plyr::ldply(as.data.frame, .id="row_names")
+	rownames(covmat) <- covmat$row_names
+	covmat$row_names <- NULL
+	covmat[is.na(covmat)] <- 0
+
+
+	if(length(resources)==3){
+		# summary
+		summary <- resources[[3]]$data %>% unlist
+	} else {
+		summary <- NULL
+	}
+
+	return(list(theta=theta, covmat=covmat, summary=summary))
 
 }
 
@@ -78,6 +109,13 @@ r2ssm_args <- function(...) {
 
 	# remove FALSE, NULL and replace TRUE by empty character
 	args <- as.list(...) %>% clean_args
+
+	# rename some arguments for SSM ('next' is a protected name in R)
+	# Note: we don't use next, as it breaks package convention
+	# that's ok as no input/output is erased by default
+	# if("suffix"%in%names(args)){
+	# 	names(args)[names(args)=="suffix"] <- "next"
+	# }
 
 	return(paste0("--",names(args)," ",args, collapse=" "))
 
