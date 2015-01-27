@@ -8,8 +8,8 @@ ksimplex(ssm, dt = NULL, id = 0, root = NULL, iter = NULL,
   n_obs = NULL, size = NULL, eps_abs_integ = NULL, eps_rel_integ = NULL,
   like_min = NULL, freeze_forcing = NULL, interpolator = NULL,
   verbose = FALSE, warning = FALSE, no_dem_sto = FALSE,
-  no_white_noise = FALSE, no_diff = FALSE, trace = TRUE, diag = TRUE,
-  prior = FALSE, seed_time = TRUE)
+  no_white_noise = FALSE, no_diff = FALSE, trace = TRUE, prior = FALSE,
+  seed_time = TRUE)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
@@ -47,8 +47,6 @@ ksimplex(ssm, dt = NULL, id = 0, root = NULL, iter = NULL,
 \item{no_diff}{logical, turn off diffusions (if any). Default to \code{FALSE}.}
 
 \item{trace}{logical, print the trace. Default to \code{TRUE}.}
-
-\item{diag}{logical, print the diagnostics outputs (e.g. prediction residuals). Default to \code{TRUE}.}
 
 \item{prior}{logical, add log(prior) to the estimated log-likelihood. Default to \code{TRUE}.}
 

@@ -72,7 +72,7 @@ pmcmc(ssm, approx = c("ode", "sde", "psr"), dt = NULL, id = 0,
 
 \item{traj}{logical, print the trajectories. Default to \code{TRUE}.}
 
-\item{n_traj}{numeric, number of trajectories stored. If \code{NULL} (default), all trajectories are stored.}
+\item{n_traj}{numeric, number of trajectories stored. If \code{NULL} (default), one trajectory is stored at each iteration.}
 
 \item{hat}{logical, print the state estimates. Default to \code{FALSE}.}
 

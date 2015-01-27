@@ -11,7 +11,7 @@ kmcmc(ssm, dt = NULL, id = 0, root = NULL, iter = NULL, n_obs = NULL,
   interpolator = NULL, verbose = FALSE, warning = FALSE,
   no_dem_sto = FALSE, no_white_noise = FALSE, no_diff = FALSE,
   traj = TRUE, n_traj = NULL, hat = FALSE, trace = TRUE, acc = TRUE,
-  diag = TRUE, prior = FALSE, seed_time = TRUE)
+  seed_time = TRUE)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
@@ -60,17 +60,13 @@ kmcmc(ssm, dt = NULL, id = 0, root = NULL, iter = NULL, n_obs = NULL,
 
 \item{traj}{logical, print the trajectories. Default to \code{TRUE}.}
 
-\item{n_traj}{numeric, number of trajectories stored. If \code{NULL} (default), all trajectories are stored.}
+\item{n_traj}{numeric, number of trajectories stored. If \code{NULL} (default), one trajectory is stored at each iteration.}
 
 \item{hat}{logical, print the state estimates. Default to \code{FALSE}.}
 
 \item{trace}{logical, print the trace. Default to \code{TRUE}.}
 
 \item{acc}{logical, print the acceptance rate. Default to \code{TRUE}.}
-
-\item{diag}{logical, print the diagnostics outputs (e.g. prediction residuals). Default to \code{TRUE}.}
-
-\item{prior}{logical, add log(prior) to the estimated log-likelihood. Default to \code{TRUE}.}
 
 \item{seed_time}{logical, seed the random number generator with the current time. Default to \code{TRUE}.}
 }

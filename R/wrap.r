@@ -134,7 +134,7 @@ kalman <- function(ssm, dt=NULL, id=0, root=NULL, n_obs=NULL, eps_abs_integ=NULL
 #' @inheritParams kalman
 #' @export
 #' @return a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
-kmcmc <- function(ssm, dt=NULL, id=0, root=NULL, iter=NULL, n_obs=NULL, cooling=NULL, switch=NULL, eps_switch=NULL, eps_max=NULL, eps_abs_integ=NULL, eps_rel_integ=NULL, smooth=FALSE, alpha=NULL, like_min=NULL, freeze_forcing=NULL, interpolator=NULL, verbose=FALSE, warning=FALSE, no_dem_sto=FALSE, no_white_noise=FALSE, no_diff=FALSE, traj=TRUE, n_traj=NULL, hat=FALSE, trace=TRUE, acc=TRUE, diag=TRUE, prior=FALSE, seed_time=TRUE) {
+kmcmc <- function(ssm, dt=NULL, id=0, root=NULL, iter=NULL, n_obs=NULL, cooling=NULL, switch=NULL, eps_switch=NULL, eps_max=NULL, eps_abs_integ=NULL, eps_rel_integ=NULL, smooth=FALSE, alpha=NULL, like_min=NULL, freeze_forcing=NULL, interpolator=NULL, verbose=FALSE, warning=FALSE, no_dem_sto=FALSE, no_white_noise=FALSE, no_diff=FALSE, traj=TRUE, n_traj=NULL, hat=FALSE, trace=TRUE, acc=TRUE, seed_time=TRUE) {
 
 	# run ssm and return updated ssm
 	invisible(call_ssm(ssm=ssm, approx="sde", do="kmcmc"))
@@ -151,7 +151,7 @@ kmcmc <- function(ssm, dt=NULL, id=0, root=NULL, iter=NULL, n_obs=NULL, cooling=
 #' @inheritParams kalman
 #' @inheritParams kmcmc
 #' @return a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
-ksimplex <- function(ssm, dt=NULL, id=0, root=NULL, iter=NULL, n_obs=NULL, size=NULL, eps_abs_integ=NULL, eps_rel_integ=NULL, like_min=NULL, freeze_forcing=NULL, interpolator=NULL, verbose=FALSE, warning=FALSE, no_dem_sto=FALSE, no_white_noise=FALSE, no_diff=FALSE, trace=TRUE, diag=TRUE, prior=FALSE, seed_time=TRUE) {
+ksimplex <- function(ssm, dt=NULL, id=0, root=NULL, iter=NULL, n_obs=NULL, size=NULL, eps_abs_integ=NULL, eps_rel_integ=NULL, like_min=NULL, freeze_forcing=NULL, interpolator=NULL, verbose=FALSE, warning=FALSE, no_dem_sto=FALSE, no_white_noise=FALSE, no_diff=FALSE, trace=TRUE, prior=FALSE, seed_time=TRUE) {
 
 	# run ssm and return updated ssm
 	invisible(call_ssm(ssm=ssm, approx="sde", do="ksimplex"))
