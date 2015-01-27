@@ -41,8 +41,9 @@ my_ssm <- new_ssm(
 	observations=SEIR_observations
 	)
 
-# simplex + mcmc
-my_ssm_fited <- my_ssm %>% simplex(iter=1000) %>% pmcmc(iter=1000)
-
+# have fun 
+my_ssm_fit_ode <- my_ssm %>% simplex(iter=1000) %>% pmcmc(iter=1000)
+my_ssm_fit_sde <- my_ssm_fit_ode %>% ksimplex(iter=1000) %>% kmcmc(iter=1000)
+my_ssm_fit_psr <- my_ssm_fit_sde %>% pmcmc(id=1, approx="psr", n_parts=100, iter=1000, n_thread="max")
 
 
