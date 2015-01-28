@@ -59,6 +59,9 @@ call_ssm <- function(ssm, approx=c("ode","sde","psr"), do=c("kalman","kmcmc","ks
 		ssm$summary <- output$summary		
 	}
 
+	# save path to last job
+	ssm$hidden$last_path <- cmd_args$root
+
 	invisible(ssm)
 }
 
