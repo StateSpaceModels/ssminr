@@ -214,15 +214,18 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 
 	return(structure(list(
 		model_path = model_path,
-		data = data,
-		inputs = inputs,
+		pop_name = pop_name,
 		state_variables = state_variables,
 		theta = init_theta,
 		covmat = init_covmat,
 		summary = NULL,
-		priors = priors),
+		priors = priors,
+		data = data,
+		start_date = start_date,
+		inputs = inputs,
+		reactions = reactions,
+		observations = observations),
 	class="ssm"))
 }
-
 
 
