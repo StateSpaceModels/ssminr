@@ -24,6 +24,10 @@ print.ssm <- function(ssm) {
 	cat("path: ",dQuote(ssm$model_path),"\n")	
 	add_line()
 
+	# model path
+	cat("population: ",dQuote(ssm$pop_name),"\n")	
+	add_line()
+
 	# state variables
 	cat("state variables:",dQuote(ssm$state_variables),"\n")
 	add_line()
@@ -33,12 +37,8 @@ print.ssm <- function(ssm) {
 	add_line()
 
 	# prior
+	cat("prior:\n")
 	l_ply(ssm$priors, print_prior)
-	add_line()
-
-	# data
-	cat("data:","\n")
-	ssm$data %>% as.tbl %>% print
 	add_line()
 
 	# theta
@@ -57,5 +57,10 @@ print.ssm <- function(ssm) {
 		print(ssm$summary)
 	}
 
+	# data
+	# cat("data:","\n")
+	# ssm$data %>% as.tbl %>% print
+	# add_line()
 
+	# TODO: reactions, observations, start_date, inputs
 }
