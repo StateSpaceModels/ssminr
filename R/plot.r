@@ -9,7 +9,7 @@
 #' @param  fit_only logical, whether to show only the fit to the data.
 #' @inheritParams call_ssm
 #' @export
-#' @import ggplot tidyr dplyr
+#' @import ggplot2 tidyr dplyr
 #' @seealso \code{\link{plot_theta}}
 #' @return a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
 plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=NULL, scales="free_y", fit_only=FALSE) {

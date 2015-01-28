@@ -3,6 +3,6 @@ Title: SSMinR
 Version: 0.1
 Authors@R: c(person(given="Anton", family="Camacho",email="ntncmch@gmail.com",role=c("aut","cre")))
 Description: R interface to SSM. Define R wrappers to call and run SSM inference blocks. All pipeable.
-Depends: R (>= 3.1.2), plyr, dplyr, truncnorm, rjson, stringr, parallel
+Depends: R (>= 3.1.2), plyr, dplyr, truncnorm, rjson, stringr, parallel, ggplot2, tidyr
 License: GPL-2
 LazyData: true
