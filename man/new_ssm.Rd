@@ -81,7 +81,13 @@ my_ssm <- new_ssm(
 # my_ssm_fit_psr <- my_ssm_fit_sde \%>\% pmcmc(id=1, approx="psr", n_parts=100, iter=1000, n_thread="max")
 
 # # LHS example
-# my_ssm2 <- my_ssm \%>\% do_lhs(n=5, do="simplex", trace=FALSE, iter=10) \%>\% get_max_lhs
+my_ssm_lhs <- my_ssm \%>\% do_lhs(n=20, do="simplex", trace=FALSE, iter=100, prior=TRUE) \%>\% get_max_lhs
+
+print(my_ssm_lhs)
+
+my_ssm_mcmc <- my_ssm_lhs \%>\% simplex(iter=1000) \%>\% pmcmc(iter=1000)
+
+my_ssm_mcmc \%>\% plot_X(stat="median", hat=c(0.95, 0.5))
 
 
 
