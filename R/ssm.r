@@ -181,7 +181,7 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 	names(input_values) <- get_name(inputs)
 	
 	# extract theta from inputs: only inputs with a prior
-	init_theta <- sample_from_prior(priors) 
+	init_theta <- one_theta_sample_prior(priors) 
 
 	# check if value is provided, if so set init
 	theta_values <- input_values[names(init_theta)] %>% unlist
