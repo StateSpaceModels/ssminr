@@ -14,11 +14,13 @@ print_prior <- function(prior) {
 #'Print ssm
 #'
 #'Function to print basic information on the \code{ssm}
-#' @inheritParams call_ssm
+#' @param x a \code{ssm} object, returned by \code{\link{new_ssm}}.
 #' @export
 #' @import dplyr
 #' @importFrom plyr l_ply
-print.ssm <- function(ssm) {
+print.ssm <- function(x, ...) {
+
+	ssm <- x
 
 	# model path
 	cat("path: ",dQuote(ssm$model_path),"\n")	

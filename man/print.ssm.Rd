@@ -4,10 +4,10 @@
 \alias{print.ssm}
 \title{Print ssm}
 \usage{
-\method{print}{ssm}(ssm)
+\method{print}{ssm}(x, ...)
 }
 \arguments{
-\item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
+\item{x}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
 }
 \description{
 Function to print basic information on the \code{ssm}
