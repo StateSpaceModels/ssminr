@@ -30,6 +30,6 @@ dirac(value)
 Distributions supported by SSM to define priors
 }
 \seealso{
-\code{\link{sample_from_prior}}
+\code{\link{one_theta_sample_prior}}
 }
 
