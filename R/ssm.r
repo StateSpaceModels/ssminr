@@ -45,11 +45,11 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 
 	data_path <- file.path(dir_data,paste0("data_",pop_name,".csv"))
 
-	# 
-	data <- data %>% mutate(date=as.Date(date)) %>% filter(date > start_date) %>% mutate(date=as.character(date))
+	# keep what you need
+	data <- data %>% mutate(date=as.Date(date)) %>% filter(date > start_date)
 
 	# write data
-	write.csv(data,data_path,row.names=FALSE)
+	data %>% mutate(date=as.character(date)) %>% write.csv(data_path,row.names=FALSE)
 
 	time_series <- setdiff(names(data),"date")
 	# link to ssm.json
