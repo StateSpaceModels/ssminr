@@ -40,10 +40,9 @@ SEIR_inputs <- list(
 	input(name="d_infectious", description="infectious period", value=10),
 	input(name="I", description="initial number of infectious", prior=unif(1,1000)), 
 	input(name="R0", description="basic reproduction number", prior=unif(0,5)), 
-	input(name="rho", description="reporting rate", prior=unif(0,1)),
+	input(name="rho", description="reporting rate", prior=truncnorm(mean=0.5,sd=0.1,a=0, b=1)),
 	input(name="phi", description="overdispersion", prior=unif(0,1)),
-	input(name="vol", description="volatility on log(beta)", prior=truncnorm(mean=0.5,sd=0.1,a=0)),
-	# input(name="vol", description="volatility on log(beta)", prior=unif(0,1)),
+	input(name="vol", description="volatility on log(beta)", prior=unif(0,1)),
 	input(name="E", description="initial number incubating",transformation="I*d_incubation/d_infectious"),
 	input(name="beta", description="effective contact rate",transformation="R0/d_infectious"),
 	input(name="epsilon", description="onset of infection rate",transformation="1/d_incubation"),
@@ -76,13 +75,14 @@ my_ssm <- new_ssm(
 	observations=SEIR_observations
 	)
 
-# have fun 
+# # Have fun.. 
 # my_ssm_fit_ode <- my_ssm \%>\% simplex(iter=1000) \%>\% pmcmc(iter=1000)
 # my_ssm_fit_sde <- my_ssm_fit_ode \%>\% ksimplex(iter=1000) \%>\% kmcmc(iter=1000)
 # my_ssm_fit_psr <- my_ssm_fit_sde \%>\% pmcmc(id=1, approx="psr", n_parts=100, iter=1000, n_thread="max")
 
+# # LHS example
+# my_ssm2 <- my_ssm \%>\% do_lhs(n=5, do="simplex", trace=FALSE, iter=10) \%>\% get_max_lhs
 
-my_ssm2 <- my_ssm \%>\% do_lhs(n=5, do=simplex, trace=FALSE, iter=10) \%>\% get_max_lhs
 
 
 
