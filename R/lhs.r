@@ -1,6 +1,8 @@
 get_ssm_log_like <- function(ssm) {
 	
-	data_frame(log_like=ssm$summary["log_likelihood"], ssm=list(ssm))
+	x <- ssm$summary
+
+	data_frame(log_like=x[str_detect(names(x),"log_*")], ssm=list(ssm))
 
 }
 
