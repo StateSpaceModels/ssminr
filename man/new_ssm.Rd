@@ -65,15 +65,15 @@ data(ebola_2014)
 # dir_model <- tempdir()
 dir_model <- path.expand("~/Desktop")
 
-# my_ssm <- new_ssm(
-# 	model_path=file.path(dir_model,"SEIR_ssm"),
-# 	pop_name="Liberia",
-# 	data=liberia1,
-# 	start_date=min(liberia1$date) - 7, # start model integration 7 days before the first observation
-# 	inputs=SEIR_inputs,
-# 	reactions=SEIR_reactions,
-# 	observations=SEIR_observations
-# 	)
+my_ssm <- new_ssm(
+	model_path=file.path(dir_model,"SEIR_ssm"),
+	pop_name="Liberia",
+	data=liberia1,
+	start_date=min(liberia1$date) - 7, # start model integration 7 days before the first observation
+	inputs=SEIR_inputs,
+	reactions=SEIR_reactions,
+	observations=SEIR_observations
+	)
 
 # # Have fun.. 
 
@@ -83,11 +83,11 @@ dir_model <- path.expand("~/Desktop")
 
 # # LHS example
 
-# my_ssm_lhs <- my_ssm \%>\% do_lhs(n=20, do="simplex", trace=FALSE, iter=100, prior=TRUE) \%>\% get_max_lhs
+my_ssm_lhs <- my_ssm \%>\% do_lhs(n=20, do="simplex", trace=FALSE, iter=100, prior=TRUE) \%>\% get_max_lhs
 
 # print(my_ssm_lhs)
 
-# my_ssm_mcmc <- my_ssm_lhs \%>\% simplex(iter=1000) \%>\% pmcmc(iter=1000)
+my_ssm_mcmc <- my_ssm_lhs \%>\% simplex(iter=1000) \%>\% pmcmc(iter=1000) \%>\% to_tracer
 
 # my_ssm_mcmc \%>\% plot_X(stat="median", hat=c(0.95, 0.5))
 

@@ -23,6 +23,66 @@ get_name <- function(x) {
 
 }
 
+
+#'Export to tracer
+#'
+#'Export to tracer
+#' @inheritParams call_ssm
+#' @export
+to_tracer <- function(ssm, path=NULL, id=NULL) {
+
+	if(is.null(path)){
+
+		path <- ssm$hidden$last_path
+		
+		if(is.null(path)){
+			stop("Argument",sQuote("path"),"required", call.=FALSE)	
+		}
+	}
+
+
+	if(!is.null(id)){
+
+		df_trace <- sprintf("trace_%s.csv",id) %>% file.path(path,.) %>% read.csv
+
+	} else {
+
+		# search for all trace_* in path
+		trace_files <- list.files(path) %>% grep("trace_*",.,value=TRUE)
+
+		if(length(trace_files)==0){
+			stop("No trace files in directory", dQuote(path),"..... The Truth is Out There")
+		}
+
+		if(length(trace_files)>1){
+			
+			# if more than one, take ssm$summary$id. If missing, send error
+			id <- ssm$summary$id
+			if(is.null(id)){
+				stop("Use numeric argument",sQuote("id"),"to select one file among:",sQuote(trace_files))
+			}
+			trace_files <- sprintf("trace_%s.csv",id)
+
+		}
+
+		df_trace <- file.path(path,trace_files) %>% read.csv
+
+	}
+
+
+	df_trace <- data.frame(state=(1:nrow(df_trace))-1,df_trace)
+	# df_trace <- df_trace %>% group_by(state) %>% do(theta2R0(.,time=global_var$t_0_min)) %>% inner_join(df_trace,.,by="state")
+	df_trace$index <- NULL
+
+	write.table(df_trace,file=file.path(path,"tracer.txt"),row.names=FALSE,quote=FALSE,sep="\t")
+
+	return(ssm)
+
+}
+
+# df_tracer <- as.data.frame(my_mcmc_burn_thin_combined)
+
+
 # get_args <- function(args_names) {
 
 # 	browser()
