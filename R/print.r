@@ -65,4 +65,8 @@ print.ssm <- function(x, ...) {
 	# add_line()
 
 	# TODO: reactions, observations, start_date, inputs
+
+
+	invisible(ssm)
+
 }

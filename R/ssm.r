@@ -15,9 +15,10 @@
 #' @inheritParams r2ssm
 #' @return \code{ssm} object
 #' @export
+#' @aliases ssm
 #' @import dplyr rjson
 #' @importFrom plyr l_ply llply
-#' @example inst/examples/SEIR-example.r
+#' @example inst/examples/SIR-example.r
 new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, observations) {
 
 	# list directories
