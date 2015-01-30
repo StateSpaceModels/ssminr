@@ -117,6 +117,11 @@ r2ssm_args <- function(...) {
 	# 	names(args)[names(args)=="suffix"] <- "next"
 	# }
 
+	# TODO: better patch
+	if("iter"%in%names(args)){
+		args[["iter"]] <- args[["iter"]] %>% as.numeric %>% format(scientific=FALSE)
+	}
+
 	return(paste0("--",names(args)," ",args, collapse=" "))
 
 }
