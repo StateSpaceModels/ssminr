@@ -27,7 +27,10 @@ get_name <- function(x) {
 #'Export to tracer
 #'
 #'Export to tracer
+#' @param  path character, where to find \code{trace_*.csv}. If \code{NULL} (default), use the \code{path} of the last block (e.g. \code{/pmcmc}).
+#' @param  id numeric, indicate which \code{trace_*.csv} to choose. If \code{NULL} (default), use the \code{id} of the last block (default to 0 in SSM).
 #' @inheritParams call_ssm
+#' @inheritParams plot_X
 #' @export
 to_tracer <- function(ssm, path=NULL, id=NULL) {
 

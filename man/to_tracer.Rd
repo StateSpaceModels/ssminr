@@ -8,6 +8,10 @@ to_tracer(ssm, path = NULL, id = NULL)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
+
+\item{path}{character, where to find \code{trace_*.csv}. If \code{NULL} (default), use the \code{path} of the last block (e.g. \code{/pmcmc}).}
+
+\item{id}{numeric, indicate which \code{trace_*.csv} to choose. If \code{NULL} (default), use the \code{id} of the last block (default to 0 in SSM).}
 }
 \description{
 Export to tracer
