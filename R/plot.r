@@ -120,6 +120,32 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 }
 
 
+#'Plot data
+#'
+#'Plot the data of your \code{ssm} object.
+#' @inheritParams call_ssm
+#' @inheritParams plot_X
+#' @export
+#' @import ggplot2 tidyr
+plot_data <- function(ssm, scales="free_y") {
+
+	if(!inherits(ssm,"ssm")){
+		stop(sQuote("ssm"),"is not an object of class ssm")
+	}
+
+	data <- ssm$data %>% gather(state, value, -date)
+
+	p <- ggplot(data, aes(x=date, y=value)) + facet_wrap(~state, scales=scales)
+	p <- p + geom_bar(stat="identity")
+	print(p)
+
+	# add to ssm plot
+	ssm$plot$data <- p
+
+	invisible(ssm)
+
+}
+
 # plot_theta <- function(ssm) {
 
 # 	# posterior vs prior distribution of parameters

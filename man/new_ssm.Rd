@@ -89,6 +89,8 @@ my_ssm_lhs <- my_ssm \%>\% do_lhs(n=20, do="simplex", trace=FALSE, iter=100, pri
 
 my_ssm_mcmc <- my_ssm_lhs \%>\% simplex(iter=1000) \%>\% pmcmc(iter=1000) \%>\% to_tracer
 
+plot_data(my_ssm_mcmc)
+
 # my_ssm_mcmc \%>\% plot_X(stat="median", hat=c(0.95, 0.5))
 
 

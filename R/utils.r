@@ -51,7 +51,7 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 		trace_files <- list.files(path) %>% grep("trace_*",.,value=TRUE)
 
 		if(length(trace_files)==0){
-			stop("No trace files in directory", dQuote(path),"..... The Truth is Out There")
+			stop("No trace files in directory", dQuote(path))
 		}
 
 		if(length(trace_files)>1){
@@ -71,9 +71,9 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 
 
 	df_trace <- data.frame(state=(1:nrow(df_trace))-1,df_trace)
-	# df_trace <- df_trace %>% group_by(state) %>% do(theta2R0(.,time=global_var$t_0_min)) %>% inner_join(df_trace,.,by="state")
 	df_trace$index <- NULL
 
+	# TODO: get id and put it
 	write.table(df_trace,file=file.path(path,"tracer.txt"),row.names=FALSE,quote=FALSE,sep="\t")
 
 	return(ssm)
