@@ -41,7 +41,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 		if(length(X_files)>1){
 			
 			# if more than one, take ssm$summary$id. If missing, send error
-			id <- ssm$summary$id
+			id <- ssm$summary[["id"]]
 			if(is.null(id)){
 				stop("Use numeric argument",sQuote("id"),"to select one file among:",sQuote(X_files))
 			}

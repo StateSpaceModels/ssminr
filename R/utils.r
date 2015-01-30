@@ -57,7 +57,7 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 		if(length(trace_files)>1){
 			
 			# if more than one, take ssm$summary$id. If missing, send error
-			id <- ssm$summary$id
+			id <- ssm$summary[["id"]]
 			if(is.null(id)){
 				stop("Use numeric argument",sQuote("id"),"to select one file among:",sQuote(trace_files))
 			}
