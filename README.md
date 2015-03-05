@@ -17,5 +17,5 @@ install_github("ntncmch/SSMinR")
 To work with `SSMinR`: fire up `R`, and type 
 
 ```r
-library(help=SSMinR)
+library(SSMinR)
 ```
