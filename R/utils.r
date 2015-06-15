@@ -8,8 +8,8 @@ remove_null <- function(x) {
 }
 
 clean_args <- function(x) {
-
-	x <- x %>% remove_null %>% .[!sapply(.,is.logical) | as.logical(.)] %>% unlist %>% str_replace("TRUE","")
+	
+	x <- x %>% remove_null %>% .[!sapply(.,is.logical) | as.logical(.)] %>% unlist %>% sapply(.,function(xx) str_replace(xx,"TRUE",""))
 	
 	return(x)
 }
