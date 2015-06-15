@@ -47,7 +47,7 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 	data_path <- file.path(dir_data,paste0("data_",pop_name,".csv"))
 
 	# keep what you need
-	data <- data %>% mutate(date=as.Date(date)) %>% filter(date > start_date)
+	data <- data %>% mutate(date=as.Date(date)) %>% filter(date >= start_date)
 
 	# write data
 	data %>% mutate(date=as.character(date)) %>% write.csv(data_path,row.names=FALSE)
