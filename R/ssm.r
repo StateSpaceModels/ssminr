@@ -111,6 +111,18 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 
 	# CREATE PROCESS ---------------------------------------------------------------------
 
+	# unlist reaction if needed
+	need_unlist <- sapply(reactions, function(x) x %>% names %>% is.null) 
+
+	if(any(need_unlist)){
+
+		index_unlist <- which(need_unlist)
+		reactions_unlisted <- reactions[index_unlist] %>% unlist(recursive=FALSE, use.names=FALSE)
+		reactions <- c(reactions[-index_unlist], reactions_unlisted)
+		
+	}
+
+
 	# populations
 	state_variables <- plyr::llply(reactions, function(x) {c(x$from,x$to)}) %>% unlist %>% unique
 	ssm_populations <- r2ssm_populations(pop_name=pop_name, state_variables=state_variables, remainder=remainder_state, pop_size=pop_size_theta) 

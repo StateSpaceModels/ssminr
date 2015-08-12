@@ -2,9 +2,13 @@
 % Please edit documentation in R/reaction.r
 \name{reaction}
 \alias{reaction}
+\alias{reaction_split}
 \title{Create SSM reaction}
 \usage{
 reaction(from, to, description = NULL, rate, accumulators = NULL)
+
+reaction_split(from, split_to, description = NULL, rate,
+  accumulators = NULL)
 }
 \arguments{
 \item{from,to}{character, name of starting and ending state of the reaction}
@@ -14,6 +18,8 @@ reaction(from, to, description = NULL, rate, accumulators = NULL)
 \item{rate}{character, rate of the reaction}
 
 \item{accumulators}{character vector, one or more accumulators}
+
+\item{split_to}{a vector whose names will be the \code{to}, and whose values will be the splitting probabilities between the \code{to}.}
 }
 \description{
 Create a reaction for SSM
