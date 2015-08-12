@@ -83,6 +83,13 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 
 }
 
+
+protect <- function(x) {
+
+	return(paste0("(",x,")"))
+
+}
+
 # df_tracer <- as.data.frame(my_mcmc_burn_thin_combined)
 
 
