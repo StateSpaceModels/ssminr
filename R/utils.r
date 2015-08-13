@@ -15,14 +15,30 @@ clean_args <- function(x) {
 }
 
 
-get_name <- function(x) {
+get_element <- function(x, key) {
 
 	if(is.list(x)){
-		return(sapply(x, function(xx) {xx$name}))
+		return(sapply(x, function(xx) {xx[[key]]}))
+	} else {
+		return(x[[key]])
 	}
 
 }
 
+get_name <- function(x) {
+
+	get_element(x, "name")
+
+}
+
+
+find_element <- function(x, key, value) {
+
+	i <- sapply(x, function(xx) {xx[[key]] == value}) %>% which
+
+	return(x[i])
+
+}
 
 #'Export to tracer
 #'
@@ -89,6 +105,16 @@ protect <- function(x) {
 	return(paste0("(",x,")"))
 
 }
+
+
+get_state_variables <- function(reactions) {
+
+	x <- reactions %>% unlist
+
+	x[names(x)%in%c("from","to")] %>% unique %>% return
+
+}
+
 
 # df_tracer <- as.data.frame(my_mcmc_burn_thin_combined)
 
