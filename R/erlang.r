@@ -1,3 +1,9 @@
+erlang_name <- function(state, shape) {
+
+	return(sprintf("%s__erlang%s" ,state, shape))
+
+}
+
 make_erlang_reactions <- function(reactions, erlang_shapes) {
 
 	erlang_states <- names(erlang_shapes)
@@ -22,7 +28,7 @@ make_erlang_reactions <- function(reactions, erlang_shapes) {
 				reaction_erlang <- llply(seq_along(reaction_erlang), function(i) {
 
 					reaction <- reaction_erlang[[i]]
-					reaction$from <- paste0(erlang_state, i)
+					reaction$from <- erlang_name(erlang_state,i)
 					return(reaction)
 				})
 
@@ -65,8 +71,8 @@ make_erlang_reactions <- function(reactions, erlang_shapes) {
 				reaction_erlang <- llply(seq_along(reaction_erlang), function(i) {
 
 					reaction <- reaction_erlang[[i]]
-					reaction$from <- paste0(erlang_state, i)
-					reaction$to <- paste0(erlang_state, i+1)
+					reaction$from <- erlang_name(erlang_state, i)
+					reaction$to <- erlang_name(erlang_state, i+1)
 					return(reaction)
 				})
 
@@ -91,13 +97,13 @@ make_erlang_reactions <- function(reactions, erlang_shapes) {
    		# change TO
 		i_reaction <- sapply(reactions, function(r) {r$to==erlang_state}) %>% which
 		for(i_reaction_to in i_reaction){
-			reactions[[i_reaction_to]]$to <- paste0(erlang_state,1)
+			reactions[[i_reaction_to]]$to <- erlang_name(erlang_state,1)
 		}
 
 		# change rate
 		i_reaction <- sapply(reactions, function(r) {str_detect(r$rate,erlang_state)}) %>% which
 		for(i_reaction_rate in i_reaction){
-			reactions[[i_reaction_rate]]$rate <- str_replace_all(reactions[[i_reaction_rate]]$rate, sprintf("\\b%s\\b",erlang_state), paste0(erlang_state,1:erlang_shape, collapse=" + ") %>% protect)
+			reactions[[i_reaction_rate]]$rate <- str_replace_all(reactions[[i_reaction_rate]]$rate, sprintf("\\b%s\\b",erlang_state), erlang_name(erlang_state,1:erlang_shape) %>% paste(collapse=" + ") %>% protect)
 		}
 
 
@@ -155,7 +161,7 @@ make_erlang_inputs <- function(inputs, erlang_shapes) {
 
 		# set erlang input name
 		for(i in seq_along(input_erlang)){
-			input_erlang[[i]]$name <- paste0(erlang_state,i)
+			input_erlang[[i]]$name <- erlang_name(erlang_state,i)
 		}
 
 		inputs <- c(inputs,input_erlang)
