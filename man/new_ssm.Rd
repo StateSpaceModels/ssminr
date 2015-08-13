@@ -5,7 +5,8 @@
 \alias{ssm}
 \title{Build model in SSM}
 \usage{
-new_ssm(model_path, pop_name, data, start_date, inputs, reactions, observations)
+new_ssm(model_path, pop_name, data, start_date, inputs, reactions, observations,
+  erlang_shapes = NULL)
 }
 \arguments{
 \item{model_path}{character, full path to model directory.}
@@ -25,6 +26,8 @@ data are represented by \code{NA}.}
 \item{reactions}{list of reactions.}
 
 \item{observations}{list of observations.}
+
+\item{erlang_shapes}{named vector with state variables as names and shapes of the corresponding erlang distribution as values (optional).}
 }
 \value{
 \code{ssm} object

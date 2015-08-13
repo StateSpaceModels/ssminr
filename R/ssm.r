@@ -12,14 +12,16 @@
 #' @param inputs list of inputs.
 #' @param reactions list of reactions.
 #' @param observations list of observations.
+#' @param erlang_shapes named vector with state variables as names and shapes of the corresponding erlang distribution as values (optional).
 #' @inheritParams r2ssm
 #' @return \code{ssm} object
 #' @export
 #' @aliases ssm
 #' @import dplyr rjson
 #' @importFrom plyr l_ply llply
+#' @importFrom magrittr not
 #' @example inst/examples/SIR-example.r
-new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, observations) {
+new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, observations, erlang_shapes = NULL) {
 
 	# list directories
 	if(!file.exists(model_path)){
@@ -41,6 +43,26 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 			dir.create(dir)
 		}
 	})
+
+	# check erlang_shapes
+	erlang_shapes <- erlang_shapes[erlang_shapes > 1]
+
+	if(length(erlang_shapes)==0){
+		
+		erlang_shapes <- NULL
+
+	} else {
+
+		# check that all erlang_shapes correspond to a state_variable
+		state_variables <- get_state_variables(reactions)
+
+		if(length(x <- setdiff(names(erlang_shapes), state_variables))){
+
+			stop("The following elements of ", sQuote("erlang_shapes")," are not state variables: ", sQuote(x), call. = FALSE)
+			
+		}
+	}
+
 
 	# CREATE DATA ---------------------------------------------------------------------
 
@@ -76,6 +98,12 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 	}) %>% remove_null
 
 	# CREATE INPUTS ---------------------------------------------------------------------
+	
+	if(!is.null(erlang_shapes)){
+		# make erlang
+		inputs <- make_erlang_inputs(inputs, erlang_shapes) 
+	}
+
 	remainder_state <- NULL
 	pop_size_theta <- NULL
 
@@ -105,11 +133,13 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 
 	# remove remainder
 	if(!is.null(remainder_state)){
-		i_remainder <- which(get_name(ssm_inputs)!=remainder_state)
-		ssm_inputs <- ssm_inputs[i_remainder]
+		i_remainder <- which(get_name(ssm_inputs)==remainder_state)
+		ssm_inputs <- ssm_inputs[-i_remainder]
 	}
 
-	# CREATE PROCESS ---------------------------------------------------------------------
+	
+
+	# CREATE REACTIONS ---------------------------------------------------------------------
 
 	# unlist reaction if needed
 	need_unlist <- sapply(reactions, function(x) x %>% names %>% is.null) 
@@ -119,13 +149,32 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 		index_unlist <- which(need_unlist)
 		reactions_unlisted <- reactions[index_unlist] %>% unlist(recursive=FALSE, use.names=FALSE)
 		reactions <- c(reactions[-index_unlist], reactions_unlisted)
-		
+
 	}
 
+	if(!is.null(erlang_shapes)){
+		# make erlang
+		reactions <- make_erlang_reactions(reactions, erlang_shapes) 
+	}
 
-	# populations
-	state_variables <- plyr::llply(reactions, function(x) {c(x$from,x$to)}) %>% unlist %>% unique
+	if(any(need_unlist)){
+
+		i_split <- get_element(reactions, "split") %>% sapply(is.null) %>% magrittr::not() %>% which
+		
+		for(i in i_split){
+
+			reactions[[i]]$rate <- sprintf("(%s)*(%s)", reactions[[i]]$split, reactions[[i]]$rate)
+			reactions[[i]]$split <- NULL
+
+		}
+
+	}
+
+	# CREATE POPULATIONS ---------------------------------------------------------------------
+
+	state_variables <- get_state_variables(reactions)
 	ssm_populations <- r2ssm_populations(pop_name=pop_name, state_variables=state_variables, remainder=remainder_state, pop_size=pop_size_theta) 
+
 
 	# CREATE OBSERVATIONS ---------------------------------------------------------------------
 
@@ -143,7 +192,7 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 		}
 		return(x)
 	}) %>% remove_null
-	
+
 	if((n_sde <- length(sde))){
 
 		# drift
@@ -192,7 +241,7 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 	# check which values are defined in input
 	input_values <- sapply(inputs, function(input) {input$value})
 	names(input_values) <- get_name(inputs)
-	
+
 	# extract theta from inputs: only inputs with a prior
 	init_theta <- one_theta_sample_prior(priors) 
 
@@ -222,7 +271,7 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 	system(cmd)
 
 	# RETURN SSM ---------------------------------------------------------------------
-	
+
 	setwd(wd)
 
 	return(structure(list(

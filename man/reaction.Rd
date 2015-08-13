@@ -5,10 +5,11 @@
 \alias{reaction_split}
 \title{Create SSM reaction}
 \usage{
-reaction(from, to, description = NULL, rate, accumulators = NULL)
+reaction(from, to, description = NULL, rate, accumulators = NULL,
+  keywords = NULL)
 
 reaction_split(from, split_to, description = NULL, rate,
-  accumulators = NULL)
+  accumulators = NULL, keywords = NULL)
 }
 \arguments{
 \item{from,to}{character, name of starting and ending state of the reaction}
@@ -17,7 +18,9 @@ reaction_split(from, split_to, description = NULL, rate,
 
 \item{rate}{character, rate of the reaction}
 
-\item{accumulators}{character vector, one or more accumulators}
+\item{accumulators}{character vector, one or more accumulators. In \code{reaction_split}, several accumulators can be defined for each split reaction using a \code{list} of vectors.}
+
+\item{keywords}{character vector}
 
 \item{split_to}{a vector whose names will be the \code{to}, and whose values will be the splitting probabilities between the \code{to}.}
 }
