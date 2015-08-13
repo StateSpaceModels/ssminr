@@ -286,7 +286,8 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 		start_date = start_date,
 		inputs = inputs,
 		reactions = reactions,
-		observations = observations),
+		observations = observations,
+		erlang_shapes=erlang_shapes),
 	class="ssm"))
 }
 
