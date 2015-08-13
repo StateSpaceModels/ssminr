@@ -4,14 +4,16 @@
 \alias{plot_model}
 \title{Interactive display of SSM model}
 \usage{
-plot_model(ssm, collapse_erlang = TRUE)
+plot_model(ssm, collapse_erlang = TRUE, display = c("network", "diagramme"))
 }
 \arguments{
 \item{ssm}{a \code{\link{ssm}} object}
 
 \item{collapse_erlang}{logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.}
+
+\item{display}{logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.}
 }
 \description{
-This function displays the SSM model as a force network in a web browser, allowing for manipulation.
+This function displays the SSM model as a force network or a diagramme in a web browser, allowing for manipulation.
 }
 

@@ -1,16 +1,20 @@
 
 #'Interactive display of SSM model
 #'
-#'This function displays the SSM model as a force network in a web browser, allowing for manipulation.
+#'This function displays the SSM model as a force network or a diagramme in a web browser, allowing for manipulation.
 #' @param ssm a \code{\link{ssm}} object
 #' @param collapse_erlang logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.
+#' @param display logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.
 #' @export
-#' @import network3D
-plot_model <- function(ssm, collapse_erlang = TRUE) {
+#' @import network3D DiagrammeR
+plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagramme")) {
+
+	display <- match.arg(display)
 
 	from <- get_element(ssm$reactions, "from")
 	to <- get_element(ssm$reactions, "to")
-	network_data <- data_frame(reaction= seq_along(from), from, to)
+	rate <- get_element(ssm$reactions, "rate")
+	network_data <- data_frame(reaction= seq_along(from), from, to, rate)
 
 	if(collapse_erlang){
 
@@ -22,13 +26,56 @@ plot_model <- function(ssm, collapse_erlang = TRUE) {
 		revalue_from <- erlang_name(erlang_states, 1)
 		names(revalue_from) <- sapply(names(erlang_shapes), function(erlang_state) erlang_state %>% erlang_name((erlang_shapes[erlang_state]))) %>% unlist
 
-		network_data <- network_data %>% mutate(from=revalue(from, revalue_from)) %>% filter(!to%in%remove_to) %>% gather(type, state, -reaction) %>% 
-		mutate(state=str_replace_all(state, "__erlang[0-9]+", "")) %>% spread(type, state)
+		revalue_sum <- erlang_states
+		names(revalue_sum) <- sapply(names(erlang_shapes), function(erlang_state) erlang_state %>% erlang_name(1:(erlang_shapes[erlang_state])) %>% paste(collapse=" + ") %>% protect) %>% unlist
+		
+		network_data <- network_data %>% mutate(from=revalue(from, revalue_from)) %>% filter(!to%in%remove_to) %>% gather(type, state, -c(reaction, rate)) %>% 
+		mutate(state=str_replace_all(state, "__erlang[0-9]+", "")) %>% spread(type, state) 
+		
+		# TODO: collapse erlang rates, create a function for this		
+		# rate = rate %>% str_replace_all(names(revalue_sum), revalue_sum)) 
 
 	}
 
-	# Plot
-	simpleNetwork(network_data, Source="from", Target="to", zoom = TRUE)
+	if(display=="diagramme"){
+
+		node_statement <- network_data %>% .[c("from","to")] %>% unlist %>% unique %>% paste(collapse="; ")
+		if(collapse_erlang){
+			message("collapse_erlang for reaction rates not yet implemented. Use ", sQuote("collapse_erlang=FALSE"), " to display all states/rates", call.=FALSE)
+			edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% select(edge) %>% unlist %>% unname %>% paste(collapse=" ")			
+		} else {
+			edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% mutate(edge = sprintf("%s [label = \"%s\"]", edge, rate)) %>% select(edge) %>% unlist %>% unname %>% paste(collapse=" ")			
+		}
+
+		gviz_cmd <- sprintf("
+			digraph circles {
+
+ 		 # a 'graph' statement
+				graph [overlap = true, fontsize = 10]
+
+ 		 # several 'node' statements
+				node [shape = circle,
+				fontname = Helvetica,
+				style = filled,
+				color = grey,
+				fillcolor = steelblue]
+				%s
+
+ 		 # several 'edge' statements
+				edge[color = grey]
+				%s
+			}
+			", node_statement, edge_statement)
+
+		return(grViz(gviz_cmd))
+
+	}
+
+
+	if(display=="network"){
+
+		return(simpleNetwork(network_data, Source="from", Target="to", zoom = TRUE))
+	}
 
 }
 
