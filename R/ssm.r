@@ -2,7 +2,7 @@
 #'
 #'This function build and compile a model in SSM. 
 #' @param model_path character, full path to model directory.
-#' @param pop_name character, name of the population.
+#' @param pop character, name of the population.
 #' @param data data.frame, must have a column named \code{date} that contains 
 #' the observation dates (in \code{YYYY-MM-DD} format); and one or more numeric column(s) 
 #' that contains the observed states and which are named according to the convention 
@@ -18,10 +18,10 @@
 #' @export
 #' @aliases ssm
 #' @import dplyr rjson
-#' @importFrom plyr l_ply llply
+#' @importFrom plyr l_ply llply dlply
 #' @importFrom magrittr not
 #' @example inst/examples/SIR-example.r
-new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, observations, erlang_shapes = NULL) {
+new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observations, erlang_shapes = NULL) {
 
 	# list directories
 	if(!file.exists(model_path)){
@@ -66,25 +66,38 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 
 	# CREATE DATA ---------------------------------------------------------------------
 
-	data_path <- file.path(dir_data,paste0("data_",pop_name,".csv"))
+
+	if(!all(c("date","time_series","value")%in%names(data))){
+		stop("Missing column in ",sQuote("data")," see help(ssm)")
+	}
 
 	# keep what you need
-	data <- data %>% mutate(date=as.Date(date)) %>% filter(date > start_date)
+	data <- data %>% mutate(date=as.Date(date), time_series = as.character(time_series)) %>% filter(date > start_date) 
 
 	# write data
-	data %>% mutate(date=as.character(date)) %>% write.csv(data_path,row.names=FALSE)
+	ssm_data <- plyr::dlply(data, "time_series", function(df) {
 
-	time_series <- setdiff(names(data),"date")
-	# link to ssm.json
-	ssm_data <- plyr::llply(time_series, function(x) {
-		list(name=x,require=list(path=data_path,fields=c("date",x)))		
-	})
+		time_series <- first(df$time_series)
+		data_path <- file.path(dir_data, paste0("ts_",time_series,".csv"))
+
+		df %>% mutate(date=as.character(date)) %>% spread(time_series, value) %>% write.csv(data_path,row.names=FALSE)
+
+		return(list(name=time_series,require=list(path=data_path,fields=c("date",time_series))))
+
+	}) %>% unname
 	
 	# WRITE PRIORS ---------------------------------------------------------------------	
 	# and return prior list for R
+
 	priors <- plyr::llply(inputs, function(input){
 
+		# if(0){
+		# 	input <- find_element(inputs, "name", "N__pop_hcw")[[1]]
+		# }
+
 		if(!is.null(input$prior)){
+
+			# print(input$name)
 
 			input$prior %>% r2ssm_prior %>% rjson::toJSON(.) %>% write(file=file.path(dir_priors,paste0(input$name,".json")))
 
@@ -104,23 +117,14 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 		inputs <- make_erlang_inputs(inputs, erlang_shapes) 
 	}
 
-	remainder_state <- NULL
-	pop_size_theta <- NULL
+	remainder_state <- find_element(inputs, "tag", "remainder") %>% get_name
+	pop_size_theta <- find_element(inputs, "tag", "pop_size") %>% get_name
 
 	ssm_inputs <- plyr::llply(inputs,function(input) {
 
 		if(!is.null(input$prior)){
 			input$prior <- NULL
 			input$require <- list(name=input$name,path=file.path(dir_priors,paste0(input$name,".json")))
-		}
-
-		# check tag
-		if(input$tag=="remainder"){
-			remainder_state <<- input$name
-		}
-
-		if(input$tag=="pop_size"){
-			pop_size_theta <<- input$name
 		}
 
 		# remove value and tag
@@ -132,24 +136,28 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 	})
 
 	# remove remainder
-	if(!is.null(remainder_state)){
-		i_remainder <- which(get_name(ssm_inputs)==remainder_state)
+	if(length(remainder_state)){
+		i_remainder <- which(get_name(ssm_inputs)%in%remainder_state)
 		ssm_inputs <- ssm_inputs[-i_remainder]
 	}
 
-	
 
 	# CREATE REACTIONS ---------------------------------------------------------------------
 
 	# unlist reaction if needed
-	need_unlist <- sapply(reactions, function(x) x %>% names %>% is.null) 
+	need_split <- sapply(reactions, function(x) length(x$to)>1) 
 
-	if(any(need_unlist)){
+	if(any(need_split)){
 
-		index_unlist <- which(need_unlist)
-		reactions_unlisted <- reactions[index_unlist] %>% unlist(recursive=FALSE, use.names=FALSE)
-		reactions <- c(reactions[-index_unlist], reactions_unlisted)
+		index_split <- which(need_split)
+		for(i in index_split){
 
+			r <- reactions[[i]]
+			reactions <- c(reactions,reaction_split(from=r$from, split_to=r$to, description=r$description, rate=r$rate, accumulators=r$accumulators, keywords=r$keywords))
+
+		}
+
+		reactions <- reactions[-index_split]
 	}
 
 	if(!is.null(erlang_shapes)){
@@ -157,7 +165,7 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 		reactions <- make_erlang_reactions(reactions, erlang_shapes) 
 	}
 
-	if(any(need_unlist)){
+	if(any(need_split)){
 
 		i_split <- get_element(reactions, "split") %>% sapply(is.null) %>% magrittr::not() %>% which
 		
@@ -173,7 +181,7 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 	# CREATE POPULATIONS ---------------------------------------------------------------------
 
 	state_variables <- get_state_variables(reactions)
-	ssm_populations <- r2ssm_populations(pop_name=pop_name, state_variables=state_variables, remainder=remainder_state, pop_size=pop_size_theta) 
+	ssm_populations <- r2ssm_populations(pop=pop, state_variables=state_variables, remainder=remainder_state, pop_size=pop_size_theta) 
 
 
 	# CREATE OBSERVATIONS ---------------------------------------------------------------------
@@ -276,7 +284,7 @@ new_ssm <- function(model_path, pop_name, data, start_date, inputs, reactions, o
 
 	return(structure(list(
 		model_path = model_path,
-		pop_name = pop_name,
+		pop = pop,
 		state_variables = state_variables,
 		theta = init_theta,
 		covmat = init_covmat,

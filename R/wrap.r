@@ -45,6 +45,8 @@ call_ssm <- function(ssm, approx=c("ode","sde","psr"), do=c("kalman","kmcmc","ks
 
 	theta_out_path <- file.path(cmd_args$root,sprintf("theta_out_%s.json", cmd_args$id))
 
+	browser()
+
 	cmd <- sprintf("cd %s/bin; cat %s | ./%s %s %s > %s", ssm$model_path, theta_in_path, do, approx, r2ssm_args(cmd_args), theta_out_path)
 
 	# execute cmd 

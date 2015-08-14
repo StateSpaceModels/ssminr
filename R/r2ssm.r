@@ -86,22 +86,72 @@ ssm2r_resources <- function(ssm_theta){
 }
 
 
-#' @param pop_name character
+r2ssm_one_population <- function(pop, state_variables, remainder=NULL, pop_size=NULL) {
+
+	if(length(pop)!=1){
+		stop("More than one pop")
+	}
+
+	pop_formated <- list(name=pop, composition=state_variables)
+
+	if(!is.null(remainder)){
+
+		if(length(remainder) > 1){
+			stop("More than one remainder_state ", sQuote(remainder))	
+		}
+
+		if(length(pop_size) != 1){
+			stop("Only one pop_size required. Pop_size found: ", sQuote(pop_size))	
+		}
+
+
+		pop_formated$remainder <- list(name=remainder,pop_size=pop_size)
+	}
+
+	return(pop_formated)
+}
+
+
+#' @param pop character
 #' @param state_variables character vector, name of all state variables 
 #' @param remainder character, name of the state variable considered as a remainder.
 #' @param pop_size character, name of the parameter corresponding to the population size. Required if \code{remainder} is provided.
 #' @name r2ssm
 #' @aliases r2ssm_populations
-r2ssm_populations <- function(pop_name, state_variables, remainder=NULL, pop_size=NULL) {
+r2ssm_populations <- function(pop, state_variables, remainder=NULL, pop_size=NULL) {
 
-	pop_formated <- list(name=pop_name, composition=state_variables)
+	if(length(pop)==1){
 
-	if(!is.null(remainder)){
-		pop_formated$remainder <- list(name=remainder,pop_size=pop_size)
+		pop_formated <- r2ssm_one_population(pop, state_variables, remainder, pop_size)
+
+	} else {
+
+		pop_formated <- llply(pop, function(pop_x) {
+
+			state_variables_x <- state_variables[str_detect(state_variables, sprintf("pop_%s", pop_x))]
+
+			if(!is.null(remainder))	{
+				remainder_x <- remainder[str_detect(remainder, sprintf("pop_%s", pop_x))]			
+			} else {
+				remainder_x <- NULL
+			}
+
+			if(!is.null(pop_size))	{
+				pop_size_x <- pop_size[str_detect(pop_size, sprintf("pop_%s", pop_x))]			
+			} else {
+				pop_size_x <- NULL
+			}
+
+			r2ssm_one_population(pop_x, state_variables_x, remainder_x, pop_size_x) %>% return
+
+		})
+		
 	}
 
-	return(list(pop_formated))
+	return(pop_formated)
 }
+
+
 
 
 

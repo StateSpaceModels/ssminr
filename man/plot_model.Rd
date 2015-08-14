@@ -4,7 +4,8 @@
 \alias{plot_model}
 \title{Interactive display of SSM model}
 \usage{
-plot_model(ssm, collapse_erlang = TRUE, display = c("network", "diagramme"))
+plot_model(ssm, collapse_erlang = TRUE, display = c("network", "diagramme"),
+  engine = "dot")
 }
 \arguments{
 \item{ssm}{a \code{\link{ssm}} object}

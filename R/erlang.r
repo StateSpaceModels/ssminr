@@ -1,6 +1,6 @@
 erlang_name <- function(state, shape) {
 
-	return(sprintf("%s__erlang%s" ,state, shape))
+	return(sprintf("%s__erlang_%s" ,state, shape))
 
 }
 

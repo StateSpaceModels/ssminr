@@ -5,13 +5,13 @@
 \alias{ssm}
 \title{Build model in SSM}
 \usage{
-new_ssm(model_path, pop_name, data, start_date, inputs, reactions, observations,
+new_ssm(model_path, pop, data, start_date, inputs, reactions, observations,
   erlang_shapes = NULL)
 }
 \arguments{
 \item{model_path}{character, full path to model directory.}
 
-\item{pop_name}{character, name of the population.}
+\item{pop}{character, name of the population.}
 
 \item{data}{data.frame, must have a column named \code{date} that contains
 the observation dates (in \code{YYYY-MM-DD} format); and one or more numeric column(s)

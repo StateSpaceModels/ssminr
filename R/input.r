@@ -22,8 +22,18 @@ input <- function(name, description=NULL, value=NULL, prior=NULL, transformation
 	tag <- match.arg(tag)
 
 	# TODO do some check here
+	if(!is.null(names(value))){
 
-	if(!is.null(value) && is.null(prior)){
+		for(x in names(value)){
+
+			if(is.null(prior[[x]])){
+				# define dirac on value
+				prior[[x]] <- dirac(value[[x]])
+			}
+
+		}
+
+	} else if(!is.null(value) && is.null(prior)){
 
 		# define dirac on value
 		prior <- dirac(value)

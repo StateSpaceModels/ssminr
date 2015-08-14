@@ -18,7 +18,7 @@ reaction <- function(from, to, description=NULL, rate, accumulators=NULL, keywor
 	}
 
 	if(!is.null(keywords)){
-		reaction$keywords <- match.arg(keywords, choices = c("waiting","transmission","linear"), several.ok = TRUE)	
+		reaction$keywords <- match.arg(keywords, choices = c("waiting", "transmission", "linear", "split"), several.ok = TRUE)	
 	}
 
 	return(reaction)
@@ -49,3 +49,22 @@ reaction_split <- function(from, split_to, description=NULL, rate, accumulators=
 	return(reactions)
 
 }
+
+#' @param NGM a list returned by \code{\link{define_NGM}}.
+#' @name reaction
+#' @aliases reaction_NGM
+reaction_NGM <- function(from, to, description=NULL, NGM, accumulators=NULL, keywords=NULL) {
+
+	ans <- reaction(from=from, to=to, description=description, rate=NGM, accumulators=accumulators, keywords=keywords)
+
+	ans$keywords <- c(ans$keywords, "NGM")
+
+	return(ans)
+
+}
+
+
+
+
+
+

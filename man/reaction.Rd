@@ -2,6 +2,7 @@
 % Please edit documentation in R/reaction.r
 \name{reaction}
 \alias{reaction}
+\alias{reaction_NGM}
 \alias{reaction_split}
 \title{Create SSM reaction}
 \usage{
@@ -10,6 +11,9 @@ reaction(from, to, description = NULL, rate, accumulators = NULL,
 
 reaction_split(from, split_to, description = NULL, rate,
   accumulators = NULL, keywords = NULL)
+
+reaction_NGM(from, to, description = NULL, NGM, accumulators = NULL,
+  keywords = NULL)
 }
 \arguments{
 \item{from,to}{character, name of starting and ending state of the reaction}
@@ -23,6 +27,8 @@ reaction_split(from, split_to, description = NULL, rate,
 \item{keywords}{character vector}
 
 \item{split_to}{a vector whose names will be the \code{to}, and whose values will be the splitting probabilities between the \code{to}.}
+
+\item{NGM}{a list returned by \code{\link{define_NGM}}.}
 }
 \description{
 Create a reaction for SSM
