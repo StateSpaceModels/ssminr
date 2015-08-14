@@ -6,8 +6,8 @@
 #' @param collapse_erlang logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.
 #' @param display logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.
 #' @export
-#' @import network3D DiagrammeR
-plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagramme")) {
+#' @import networkD3 DiagrammeR
+plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagramme"), engine = "dot") {
 
 	display <- match.arg(display)
 
@@ -44,7 +44,7 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 			message("collapse_erlang for reaction rates not yet implemented. Use ", sQuote("collapse_erlang=FALSE"), " to display all states/rates", call.=FALSE)
 			edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% select(edge) %>% unlist %>% unname %>% paste(collapse=" ")			
 		} else {
-			edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% mutate(edge = sprintf("%s [label = \"%s\"]", edge, rate)) %>% select(edge) %>% unlist %>% unname %>% paste(collapse=" ")			
+			edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% mutate(edge = sprintf("%s [label = \" %s\"]", edge, rate)) %>% select(edge) %>% unlist %>% unname %>% paste(collapse=" ")			
 		}
 
 		gviz_cmd <- sprintf("
@@ -67,7 +67,7 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 			}
 			", node_statement, edge_statement)
 
-		return(grViz(gviz_cmd))
+		return(grViz(gviz_cmd, engine = engine))
 
 	}
 
