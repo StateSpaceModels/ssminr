@@ -36,9 +36,22 @@ r2ssm_prior <- function(prior) {
 #' @aliases r2ssm_resources
 r2ssm_resources <- function(theta, covmat){
 
+	names_theta <- names(theta)
+	add_theta <- setdiff(names_theta, rownames(covmat))
+
+	if(length(add_theta)){
+		# add missing theta to covmat
+		# for instance when mcmc(ode) -> kmcmc(sde) and one wants to estimate volatility
+		n_theta <- length(theta)
+		new_covmat <- matrix(0, nrow=n_theta, ncol=n_theta, dimnames=list(names_theta,names_theta))
+		new_covmat[rownames(covmat), colnames(covmat)] <- as.matrix(covmat)
+		new_covmat[add_theta,add_theta] <- theta[add_theta]/10
+		covmat <- new_covmat
+	}
+
 	covmat_list <- as.list(as.data.frame(covmat))
 
-	for(i in names(theta)){
+	for(i in names(covmat_list)){
 		x <- covmat_list[[i]]
 		x <- as.list(x)
 		names(x) <- rownames(covmat)	
