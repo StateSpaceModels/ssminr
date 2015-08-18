@@ -1,4 +1,4 @@
-erlang_name <- function(state, shape) {
+erlang_name <- function(state="", shape="") {
 
 	return(sprintf("%s__erlang_%s" ,state, shape))
 
@@ -135,6 +135,7 @@ make_erlang_inputs <- function(inputs, erlang_shapes) {
 			new_input <- input
 			
 			new_input[[1]]$transformation <- sprintf("(%s)/(%s)", input[[1]]$name, erlang_shape)
+			
 			new_input[[1]]$prior <- NULL
 			
 			# rescale initial value
