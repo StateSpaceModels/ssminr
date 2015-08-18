@@ -27,7 +27,7 @@ print.ssm <- function(x, ...) {
 	add_line()
 
 	# model path
-	cat("population: ",dQuote(ssm$pop_name),"\n")	
+	cat("population: ",dQuote(ssm$pop),"\n")	
 	add_line()
 
 	# state variables
