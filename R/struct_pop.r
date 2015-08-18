@@ -1,10 +1,10 @@
-pop_name <- function(x, pop) {
+pop_name <- function(x="", pop="") {
 
 	return(sprintf("%s__pop_%s" ,x, pop))
 
 }
 
-define_NGM <- function(S_pop, I_pop, prior, value, infectious_states, infectious_period, par_pop_size, base_name_NGM = "R", base_name_WAIFW = "beta") {
+define_NGM <- function(S_pop, I_pop, prior, sde=NULL, sigmoid = FALSE, value, infectious_states, infectious_period, par_pop_size, base_name_NGM = "R", base_name_delta = "delta_sigmoid", base_name_shape = "shape_sigmoid", base_name_shift = "shift_sigmoid") {
 
 	if(0){
 		S_pop <- pop
@@ -15,28 +15,71 @@ define_NGM <- function(S_pop, I_pop, prior, value, infectious_states, infectious
 		infectious_period <- "d_infectious"
 		par_pop_size <- "N"
 		base_name_NGM <- "R"
+		sde=NULL
 	}
 
 	#
-	WAIFW <- expand.grid(S=S_pop, I=I_pop) %>% mutate(R=sprintf("%s_S%s_I%s",base_name_NGM,S,I), beta=sprintf("%s_S%s_I%s",base_name_WAIFW,S,I), infectious_period = pop_name(infectious_period,I), S_pop_size = pop_name(par_pop_size, S))
+	df_NGM <- expand.grid(S=S_pop, I=I_pop) %>% 
+	mutate(
+		R=sprintf("%s_S%s_I%s",base_name_NGM,S,I), 
+		infectious_period = pop_name(infectious_period,I), 
+		S_pop_size = pop_name(par_pop_size, S)
+		)
+
 
 	# define inputs
-	NGM_inputs <- dlply(WAIFW, c("R"), function(df) {
+	NGM_inputs <- dlply(df_NGM, c("R"), function(df) {
 
-		list(
-			input(name=df$R, description="basic reproduction number", prior=prior, value= value),
-			input(name=df$beta, description="effective contact rate", transformation=sprintf("(%s)/(%s)", df$R, df$infectious_period))
+		input(name=df$R, description="basic reproduction number", prior=prior, value= value, sde=sde)
+
+	}) %>% unname
+	
+	if(sigmoid){
+		# 
+
+		# change NGM
+		# df_NGM <- df_NGM %>% 
+		# mutate(
+		# 	delta=sprintf("%s_S%s_I%s",base_name_delta,S,I), 
+		# 	shape=sprintf("%s_S%s_I%s",base_name_shape,S,I), 
+		# 	shift=sprintf("%s_S%s_I%s",base_name_shift,S,I),
+		# 	R=sprintf("%s*(1 - %s*sigmoid(t,%s,%s))",R, delta, shape, shift)		
+		# 	)
+
+		df_NGM$tmp <- "hcw"
+		df_NGM$tmp[df_NGM$I=="com" & df_NGM$S=="com"] <- "com"
+
+		df_NGM <- df_NGM %>% 
+		mutate(
+			delta=sprintf("%s_%s",base_name_delta, tmp), 
+			shape=sprintf("%s_%s",base_name_shape, tmp), 
+			shift=sprintf("%s_%s",base_name_shift, tmp),
+			R=sprintf("%s*(1 - %s*sigmoid(t,%s,%s))",R, delta, shape, shift)		
 			)
 
-	}) %>% unlist(recursive=FALSE) %>% unname
-	
+
+		# add inputs
+		NGM_inputs_sigmoid <- dlply(df_NGM, c("R"), function(df) {
+
+			list(
+				input(name=df$delta, description="relative drop of the reproduction number", prior=unif(0,1), value=0.5),
+				input(name=df$shape, description="shape of the sigmoid for reproduction number", prior=unif(0,5), value=1),
+				input(name=df$shift, description="shift of the sigmoid for reproduction number", prior=unif(0,180), value=90)
+				)
+
+		}) %>% unlist(recursive=FALSE) %>% unname %>% unique
+
+		NGM_inputs <- c(NGM_inputs, NGM_inputs_sigmoid)
+
+	}
+
 
 	# define force of infection
-	force_of_infection <- dlply(WAIFW, "S", function(df) {
+	force_of_infection <- dlply(df_NGM, "S", function(df) {
 
 		infectious_in_each_pop <- sapply(df$I, function(x) pop_name(infectious_states, x) %>% paste(collapse=" + ")) 
 
-		sprintf("%s * (%s)",df$beta, infectious_in_each_pop) %>% paste(collapse=" + ") %>% sprintf("(%s) / (%s)", ., first(df$S_pop_size))
+		sprintf("%s * (%s) / (%s)",df$R, infectious_in_each_pop, df$infectious_period) %>% paste(collapse=" + ") %>% sprintf("(%s) / (%s)", ., first(df$S_pop_size))
 
 	}) %>% unlist(recursive=FALSE)
 
@@ -47,10 +90,6 @@ define_NGM <- function(S_pop, I_pop, prior, value, infectious_states, infectious
 add_pop_to_input <- function(input, pop, names_var_pop) {
 
 
-	# if(input$name == "N"){
-	# 	browser()
-	# }
-
 	for(name_var_pop in names_var_pop){
 
 		input$name <- str_replace_all(input$name, sprintf("\\b%s\\b",name_var_pop), pop_name(name_var_pop, pop))							
@@ -58,6 +97,11 @@ add_pop_to_input <- function(input, pop, names_var_pop) {
 		if(!is.null(input$transformation)){
 			input$transformation <- str_replace_all(input$transformation, sprintf("\\b%s\\b",name_var_pop), pop_name(name_var_pop, pop))							
 		}
+
+		if(!is.null(input$to_resource)){
+			input$to_resource <- str_replace_all(input$to_resource, sprintf("\\b%s\\b",name_var_pop), pop_name(name_var_pop, pop))							
+		}
+
 
 	}	
 
