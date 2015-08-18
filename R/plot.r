@@ -94,7 +94,7 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 #' @import ggplot2 tidyr dplyr
 #' @seealso \code{\link{plot_theta}}
 #' @return a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
-plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=NULL, scales="free_y", fit_only=FALSE) {
+plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=NULL, scales="free_y", fit_only=FALSE, collapse_erlang=TRUE) {
 
 	stat <- match.arg(stat)
 
@@ -136,25 +136,44 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 	}
 	
 	# tidy
-	df_X <- df_X %>% mutate(date=as.Date(date)) %>% gather(state, value, -date, -index)
+	df_X <- df_X %>% mutate(date=as.Date(date)) %>% gather(state, value, -date, -index)  
+
+	if(collapse_erlang){
+
+		df_X_erlang <- df_X %>% filter(str_detect(state, erlang_name())) %>% separate(state, c("state","erlang"), sep=erlang_name()) %>% 
+		group_by_(.dots=setdiff(names(df_X), "value")) %>% summarize(value=sum(value)) %>% ungroup
+		df_X <- df_X %>% filter(!str_detect(state, erlang_name())) %>% bind_rows(df_X_erlang) %>% arrange(index, date, state)
+
+	}
+
+	# separate pop only if collapse_erlang. Otherwise we loose erlang order as always last.
+	if(collapse_erlang && any(str_detect(df_X$state, pop_name()))){
+
+		df_X_pop <- df_X %>% filter(str_detect(state, pop_name())) %>% separate(state, c("state","pop"), sep=pop_name())
+		df_X <- df_X %>% filter(!str_detect(state, pop_name())) %>% bind_rows(df_X_pop) %>% arrange(index, date, pop, state)
+
+	}
 
 	# any stat?
 	if(stat!="none"){
 
 		stat <- ifelse(stat=="median","stats::median",stat)
-		dots <- list(sprintf("%s(value)",stat))
-		df_stat <- df_X %>% group_by(date, state) %>% summarize_(.dots=setNames(dots,"value"))
+		dots_summarize <- list(sprintf("%s(value)",stat))
+		dots_group_by <- setdiff(names(df_X), c("value","index"))
+		df_stat <- df_X %>% group_by_(.dots=dots_group_by) %>% summarize_(.dots=setNames(dots_summarize,"value"))
 	}
 
 	# any hat?
 	if(!is.null(hat)){
 
 		prob <- c((1-hat)/2,(1+hat)/2) %>% unique %>% sort 
-		dots <- as.list(sprintf("stats::quantile(value, %s, type=1)",prob))	
+		dots_summarize <- as.list(sprintf("stats::quantile(value, %s, type=1)",prob))	
+		dots_group_by <- setdiff(names(df_X), c("value","index"))
+
 		hat_label <- paste0(sort(hat)*100,"%")
 		dots_names <- c(sprintf("lower_%s",rev(hat_label)),sprintf("upper_%s",hat_label))
 
-		df_hat <- df_X %>% group_by(date, state) %>% summarize_(.dots=setNames(dots,dots_names)) %>% ungroup %>% gather(tmp, value, -date, -state) %>% separate(tmp,c("hat","level"),sep="_") %>% spread(hat, value)
+		df_hat <- df_X %>% group_by_(.dots=dots_group_by) %>% summarize_(.dots=setNames(dots_summarize,dots_names)) %>% ungroup %>% gather(tmp, value, matches("lower|upper")) %>% separate(tmp,c("hat","level"),sep="_") %>% spread(hat, value)
 
 	}
 
@@ -164,17 +183,29 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 		df_plot <- df_X
 	}
 
-	df_data <- ssm$data %>% gather(state, value, -date)
+	df_data <- ssm$data %>% rename(state=time_series)
+
+	if(collapse_erlang && any(str_detect(df_data$state, pop_name()))){
+
+		df_data_pop <- df_data %>% filter(str_detect(state, pop_name())) %>% separate(state, c("state","pop"), sep=pop_name())
+		df_data <- df_data %>% filter(!str_detect(state, pop_name())) %>% bind_rows(df_data_pop) %>% arrange(date, pop, state)
+
+	}
+
+	by_names <- intersect(names(df_data), names(df_plot))
+
+	df_data <- df_data %>% semi_join(df_plot, by=by_names)
 
 	if(fit_only){
+
 		# keep states that match data
-		df_plot <- df_plot %>% semi_join(df_data, c("date","state"))
+		df_plot <- df_plot %>% semi_join(df_data, by_names)
 		if(stat!="none"){
-			df_stat <- df_stat %>% semi_join(df_data, c("date","state"))			
+			df_stat <- df_stat %>% semi_join(df_data, by_names)			
 		}
 	}
 
-	p <- ggplot(data=df_plot, aes(x=date)) + facet_wrap(~state, scales=scales)
+	p <- ggplot(data=df_plot, aes(x=date)) + facet_wrap(pop~state, scales=scales)
 
 	if(is.null(hat)){
 		# plot traj
@@ -215,9 +246,17 @@ plot_data <- function(ssm, scales="free_y") {
 		stop(sQuote("ssm"),"is not an object of class ssm")
 	}
 
-	data <- ssm$data %>% gather(state, value, -date)
+	df_data <- ssm$data %>% rename(state=time_series)
 
-	p <- ggplot(data, aes(x=date, y=value)) + facet_wrap(~state, scales=scales)
+	if(any(str_detect(df_data$state, pop_name()))){
+
+		df_data_pop <- df_data %>% filter(str_detect(state, pop_name())) %>% separate(state, c("state","pop"), sep=pop_name())
+		df_data <- df_data %>% filter(!str_detect(state, pop_name())) %>% bind_rows(df_data_pop) %>% arrange(date, pop, state)
+
+	}
+
+
+	p <- ggplot(data, aes(x=date, y=value)) + facet_wrap(pop~state, scales=scales)
 	p <- p + geom_bar(stat="identity")
 	print(p)
 
