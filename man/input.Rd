@@ -5,8 +5,8 @@
 \title{Create SSM input}
 \usage{
 input(name, description = NULL, value = NULL, prior = NULL,
-  transformation = NULL, sde = NULL, tag = c("none", "remainder",
-  "pop_size"))
+  transformation = NULL, to_resource = NULL, sde = NULL, tag = c("none",
+  "remainder", "pop_size"))
 }
 \arguments{
 \item{name}{character, name of the input}

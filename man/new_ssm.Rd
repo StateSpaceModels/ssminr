@@ -67,7 +67,7 @@ dir_model <- path.expand("~/Desktop")
 
 my_ssm <- new_ssm(
 	model_path=file.path(dir_model,"SIR_ssm"),
-	pop_name="Liberia",
+	pop="Liberia",
 	data=liberia2,
 	start_date=min(liberia1$date) - 7, # start model integration 7 days before the first observation
 	inputs=SIR_inputs,
