@@ -176,3 +176,14 @@ make_erlang_inputs <- function(inputs, erlang_shapes) {
 }
 
 
+collapse_erlang <- function(df_X){
+
+	df_X_erlang <- df_X %>% filter(str_detect(state, erlang_name())) %>% separate(state, c("state","erlang"), sep=erlang_name()) %>% 
+	group_by_(.dots=setdiff(names(df_X), "value")) %>% summarize(value=sum(value)) %>% ungroup
+	df_X <- df_X %>% filter(!str_detect(state, erlang_name())) %>% bind_rows(df_X_erlang) %>% arrange(index, date, state)
+
+	return(df_X)
+
+}
+
+

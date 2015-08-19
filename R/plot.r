@@ -140,10 +140,8 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 
 	if(collapse_erlang){
 
-		df_X_erlang <- df_X %>% filter(str_detect(state, erlang_name())) %>% separate(state, c("state","erlang"), sep=erlang_name()) %>% 
-		group_by_(.dots=setdiff(names(df_X), "value")) %>% summarize(value=sum(value)) %>% ungroup
-		df_X <- df_X %>% filter(!str_detect(state, erlang_name())) %>% bind_rows(df_X_erlang) %>% arrange(index, date, state)
-
+		df_X <- collapse_erlang(df_X)
+		
 	}
 
 	# separate pop only if collapse_erlang. Otherwise we loose erlang order as always last.
@@ -192,8 +190,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 
 	}
 
-	by_names <- intersect(names(df_data), names(df_plot))
-
+	by_names <- intersect(names(df_data), names(df_plot)) %>% setdiff("value")
 	df_data <- df_data %>% semi_join(df_plot, by=by_names)
 
 	if(fit_only){
