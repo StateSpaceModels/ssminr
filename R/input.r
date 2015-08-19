@@ -17,7 +17,7 @@
 #' @examples \dontrun{
 #'  TODO
 #'}
-input <- function(name, description=NULL, value=NULL, prior=NULL, transformation=NULL, sde=NULL, tag=c("none","remainder","pop_size")) {
+input <- function(name, description=NULL, value=NULL, prior=NULL, transformation=NULL, to_resource=NULL, sde=NULL, tag=c("none","remainder","pop_size")) {
 
 	tag <- match.arg(tag)
 
@@ -40,6 +40,6 @@ input <- function(name, description=NULL, value=NULL, prior=NULL, transformation
 
 	}
 
-	list(name=name, description=description, value=value, prior=prior, transformation=transformation, sde=sde, tag=tag)
+	list(name=name, description=description, value=value, prior=prior, transformation=transformation, to_resource=to_resource, sde=sde, tag=tag)
 	
 }
