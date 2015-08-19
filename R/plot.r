@@ -206,7 +206,11 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 
 	if(is.null(hat)){
 		# plot traj
-		p <- p + geom_line(aes(y=value, group=index), alpha=min(c(0.1,10/n_distinct(df_plot$index))))		
+
+		# choose alpha
+		n_index <- n_distinct(df_plot$index)
+		alpha <- ifelse(n_index > 10, min(c(0.1,10/n_index)), 1)
+		p <- p + geom_line(aes(y=value, group=index), alpha=alpha)		
 	} else {
 
 		alpha_values <- seq(0.2,0.6,len=length(hat_label)) %>% rev
