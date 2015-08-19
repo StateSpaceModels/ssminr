@@ -18,7 +18,7 @@ reaction <- function(from, to, description=NULL, rate, accumulators=NULL, keywor
 	}
 
 	if(!is.null(keywords)){
-		reaction$keywords <- match.arg(keywords, choices = c("waiting", "transmission", "linear", "split"), several.ok = TRUE)	
+		reaction$keywords <- match.arg(keywords, choices = c("waiting", "transmission", "linear", "split", "while_from_is_positive"), several.ok = TRUE)	
 	}
 
 	return(reaction)
