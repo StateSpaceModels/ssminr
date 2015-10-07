@@ -135,7 +135,7 @@ r2ssm_populations <- function(pop, state_variables, remainder=NULL, pop_size=NUL
 
 	if(length(pop)==1){
 
-		pop_formated <- r2ssm_one_population(pop, state_variables, remainder, pop_size)
+		pop_formated <- list(r2ssm_one_population(pop, state_variables, remainder, pop_size))
 
 	} else {
 
@@ -144,12 +144,14 @@ r2ssm_populations <- function(pop, state_variables, remainder=NULL, pop_size=NUL
 			state_variables_x <- state_variables[str_detect(state_variables, sprintf("pop_%s", pop_x))]
 
 			if(!is.null(remainder))	{
+				# search remainder of the pop
 				remainder_x <- remainder[str_detect(remainder, sprintf("pop_%s", pop_x))]			
 			} else {
 				remainder_x <- NULL
 			}
 
 			if(!is.null(pop_size))	{
+				# search pop_size of the pop
 				pop_size_x <- pop_size[str_detect(pop_size, sprintf("pop_%s", pop_x))]			
 			} else {
 				pop_size_x <- NULL
