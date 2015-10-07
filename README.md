@@ -35,15 +35,17 @@ If these environment variables don't exist it's probably a good idea to [set the
 
 However, even if they exist in your system, the environment variables `LIBRARY_PATH` and `CPATH` might not be imported in your `R` session, which can result in a compilation failure. For instance, if `SSM` doesn't know the path to the header files when called within `R` you will obatain the following error at compilation:
 
-> Building the model...
+```sh
+Building the model...
 gcc  -std=gnu99 -O3 -DGSL_RANGE_CHECK_OFF -I /Users/ntncmch/.ssm/include -o Ht.o -c Ht.c
-> [91mFAIL[0m: In file included from Ht.c:19:
-> /Users/ntncmch/.ssm/include/ssm.h:36:10: fatal error: 'gsl/gsl_math.h' file not found
-> [91mFAIL[0m: #include <gsl/gsl_math.h>
->          ^
-> [91mFAIL[0m: 1 error generated.
-> [91mFAIL[0m: make: *** [Ht.o] Error 1
-> [91mFAIL[0m: could not build the model (2).
+[91mFAIL[0m: In file included from Ht.c:19:
+/Users/ntncmch/.ssm/include/ssm.h:36:10: fatal error: 'gsl/gsl_math.h' file not found
+[91mFAIL[0m: #include <gsl/gsl_math.h>
+         ^
+[91mFAIL[0m: 1 error generated.
+[91mFAIL[0m: make: *** [Ht.o] Error 1
+[91mFAIL[0m: could not build the model (2).
+```
 
 If you experience a similar issue, check whether the environment variables are imported in your `R` session by typing 
 
