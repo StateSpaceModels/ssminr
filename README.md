@@ -22,9 +22,9 @@ library(SSMinR)
 
 # Before compiling your model
 
-`SSMinR` compiles your model by calling `SSM` from your `R` session using the function `system()`. As such, when compiling `SSM` will ask `R` where to find the header files as well as the librairy dependencies.
+`SSMinR` compiles your model by calling `SSM` from your `R` session using the function `system()`. As such, when compilating, `SSM` asks `R` where to find the header files as well as the librairy dependencies needed.
 
-Outside of `R`, these information are generally stored in the environment variables `CPATH` (path look for headers files) and `LIBRARY_PATH` (path for librairies dependencies). You can check this in your terminal by typing:
+Outside of `R`, these information are generally stored in the environment variables `CPATH` (path to header files) and `LIBRARY_PATH` (path to librairy dependencies). You can check this in your terminal by typing:
 
 ```sh
 echo $CPATH
@@ -33,7 +33,7 @@ echo $LIBRARY_PATH
 
 If these environment variables don't exist it's probably a good idea to [set them](http://unix.stackexchange.com/questions/117467/how-to-permanently-set-environmental-variables).
 
-However, even if they exist in your system, the environment variables `LIBRARY_PATH` and `CPATH` might not be imported in your `R` session, which can result in a compilation failure. For instance, if `SSM` doesn't know the path to the header files when called within `R` you will obatain the following error at compilation:
+However, even if they exist in your system, the environment variables `LIBRARY_PATH` and `CPATH` might not be imported in your `R` session, which can result in a compilation failure. For instance, if `SSM` doesn't have the right path to the header files when called within `R` you will obtain the following error at compilation:
 
 ```sh
 Building the model...
@@ -53,7 +53,7 @@ If you experience a similar issue, check whether the environment variables are i
 Sys.getenv("CPATH")
 Sys.getenv("LIBRARY_PATH")
 ```
-If one or both variables are missing or doesn't indicate the appropriate path, you will need to set them permantly in your `~/.Rprofile` (read this [post](http://www.r-bloggers.com/fun-with-rprofile-and-customizing-r-startup/) if you don't have one yet) by adding the following lines:
+If one or both variables are missing or doesn't indicate the appropriate path, you will need to set them permanently in your `~/.Rprofile` (read this [post](http://www.r-bloggers.com/fun-with-rprofile-and-customizing-r-startup/) if you don't have one yet) by adding the following lines:
 
 ```r
 Sys.setenv(CPATH="/usr/local/include") # header path
