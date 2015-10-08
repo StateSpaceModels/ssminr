@@ -22,6 +22,7 @@ SIR_observations <- list(
 	)
 
 data(ebola_2014)
+data <- liberia2 %>% gather(time_series, value, -date)
 
 # the model will be created in the default temporary directory. Change the path to "wherever/you/want".
 dir_model <- tempdir()
@@ -30,7 +31,7 @@ dir_model <- tempdir()
 my_ssm <- new_ssm(
 	model_path=file.path(dir_model,"SIR_ssm"),
 	pop="Liberia",
-	data=liberia2,
+	data=data,
 	start_date=min(liberia1$date) - 7, # start model integration 7 days before the first observation
 	inputs=SIR_inputs,
 	reactions=SIR_reactions,
