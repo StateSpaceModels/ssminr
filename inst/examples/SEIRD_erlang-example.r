@@ -32,7 +32,7 @@ SEIRD_reactions <- list(
 Erlang_shapes <- c(E=2, I_D=4, I_R=3)
 
 SEIRD_observations <- list(
-	poisson_obs(state="incidence", reporting="rho")
+	discretized_normal_obs(state="incidence", reporting="rho", overdispersion="phi")
 	)
 
 data(ebola_2014)
@@ -43,7 +43,7 @@ data <- liberia1 %>% gather(time_series, value, -date)
 dir_model <- path.expand("~/Desktop")
 
 my_ssm <- new_ssm(
-	model_path=file.path(dir_model,"SEIRD_ssm"),
+	model_path=file.path(dir_model,"SEIRD_erlang"),
 	pop="Liberia",
 	data=data,
 	start_date=min(liberia1$date) - 7, # start model integration 7 days before the first observation
