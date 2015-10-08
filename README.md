@@ -59,8 +59,7 @@ If one or both variables are missing or doesn't indicate the appropriate path, y
 Sys.setenv(CPATH="/usr/local/include") # header path
 Sys.setenv(LIBRARY_PATH="/usr/local/lib") # library path
 ```
-_Note that I have set the paths to my default ones and it might not be the same on your system.
-_
+_Note that I have set the paths to my default ones and it might not be the same on your system._
 
 
 
