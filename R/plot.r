@@ -5,9 +5,10 @@
 #' @param ssm a \code{\link{ssm}} object
 #' @param collapse_erlang logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.
 #' @param display logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.
+#' @param direction character, direction of the flowchart (\code{display=="diagramme"} only). Available options are \code{LR} (left to right, by default), \code{TB} (top to bottom), \code{RL} and \code{BT}.
 #' @export
 #' @import networkD3 DiagrammeR
-plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagramme"), engine = "dot") {
+plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagramme"), engine = "dot", label_size_max=Inf, simplify_state_names = TRUE, direction = "LR") {
 
 	display <- match.arg(display)
 
@@ -21,51 +22,103 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 		erlang_shapes <- ssm$erlang_shapes
 		erlang_states <- names(erlang_shapes)
 
-		remove_to <- sapply(names(erlang_shapes), function(erlang_state) erlang_state %>% erlang_name(2:(erlang_shapes[erlang_state]))) %>% unlist
-		
+		remove_to <- sapply(erlang_states, function(erlang_state) erlang_state %>% erlang_name(2:(erlang_shapes[erlang_state]))) %>% unlist
+
 		revalue_from <- erlang_name(erlang_states, 1)
-		names(revalue_from) <- sapply(names(erlang_shapes), function(erlang_state) erlang_state %>% erlang_name((erlang_shapes[erlang_state]))) %>% unlist
+		names(revalue_from) <- sapply(erlang_states, function(erlang_state) erlang_state %>% erlang_name((erlang_shapes[erlang_state]))) %>% unlist
 
 		revalue_sum <- erlang_states
-		names(revalue_sum) <- sapply(names(erlang_shapes), function(erlang_state) erlang_state %>% erlang_name(1:(erlang_shapes[erlang_state])) %>% paste(collapse=" + ") %>% protect) %>% unlist
-		
-		network_data <- network_data %>% mutate(from=revalue(from, revalue_from)) %>% filter(!to%in%remove_to) %>% gather(type, state, -c(reaction, rate)) %>% 
-		mutate(state=str_replace_all(state, "__erlang[0-9]+", "")) %>% spread(type, state) 
-		
-		# TODO: collapse erlang rates, create a function for this		
-		# rate = rate %>% str_replace_all(names(revalue_sum), revalue_sum)) 
+		names(revalue_sum) <- sapply(erlang_states, function(erlang_state) erlang_state %>% erlang_name(1:(erlang_shapes[erlang_state])) %>% paste(collapse=" + ") %>% protect) %>% unlist
+
+		network_data <- network_data %>% mutate(from=revalue(from, revalue_from)) %>%
+		filter(!to%in%remove_to) %>% gather(type, state, -c(reaction, rate)) %>% 
+		mutate(state=str_replace_all(state, "__erlang_[0-9]+", "")) %>% spread(type, state) 
+
+		rate <- network_data$rate
+		for(sum_name in names(revalue_sum)){
+			# need to use fixed() because of the parenthesis
+			rate <- str_replace_all(rate, fixed(sum_name), revalue_sum[[sum_name]]) 
+		}
+		network_data$rate <- rate	
 
 	}
 
+
 	if(display=="diagramme"){
 
-		node_statement <- network_data %>% .[c("from","to")] %>% unlist %>% unique %>% paste(collapse="; ")
-		if(collapse_erlang){
-			message("collapse_erlang for reaction rates not yet implemented. Use ", sQuote("collapse_erlang=FALSE"), " to display all states/rates", call.=FALSE)
-			edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% select(edge) %>% unlist %>% unname %>% paste(collapse=" ")			
-		} else {
-			edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% mutate(edge = sprintf("%s [label = \" %s\"]", edge, rate)) %>% select(edge) %>% unlist %>% unname %>% paste(collapse=" ")			
+		df_nodes <- network_data %>% .[c("from","to")] %>% unlist %>% unique %>% data_frame(node=., state=node, original=node)
+
+		if(simplify_state_names){
+			# improve visibility
+
+			# simplify state names
+
+			if(any(str_detect(df_nodes$state, erlang_name()))){
+
+				#simplify erlang
+				df_erlang <- df_nodes %>% filter(str_detect(state, erlang_name())) %>% separate(state, c("state", "erlang"), sep=erlang_name())
+				df_nodes <- df_nodes %>% filter(!str_detect(state, erlang_name())) %>% bind_rows(df_erlang)
+			} else {
+				df_nodes$erlang <- NA
+			}
+
+			if(any(str_detect(df_nodes$state, pop_name()))){
+
+				#simplify pop
+				df_pop <- df_nodes %>% filter(str_detect(state, pop_name())) %>% separate(state, c("state", "pop"), sep=pop_name())
+				df_nodes <- df_nodes %>% filter(!str_detect(state, pop_name())) %>% bind_rows(df_pop)
+
+			} else {
+
+				df_nodes$pop <- NA
+			}			
+
+			df_nodes <- df_nodes %>% group_by(state, pop, erlang) %>% 
+			mutate(
+				sub = paste(na.omit(c(pop, erlang)), collapse=","),
+				label = sprintf("%s<SUB>%s</SUB>", state, sub) %>% str_replace_all("<SUB></SUB>",""), 
+				node = sprintf("%s [label = <%s>]", original, label)
+				) 
+
+			## replace in rates
+			replace_state <- df_nodes$label
+			names(replace_state) <- sprintf("\\b%s\\b",df_nodes$original)
+
+			network_data <- network_data %>% mutate(rate = rate %>% str_replace_all(replace_state))
+
+		} 
+
+		node_statement <- df_nodes$node %>% paste(collapse="; ")
+
+		if(is.finite(label_size_max)){
+			network_data <- network_data %>% mutate(rate = rate %>% str_sub(start=1L, end=label_size_max) %>% paste0("..."))
 		}
+
+		edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% 
+		mutate(edge = sprintf("%s [label = <%s>]", edge, rate)) %>% 
+		select(edge) %>% unlist %>% unname %>% paste(collapse=" ") %>% convert_symbol(to="html")			
+		
+		# TODO: modify erlang rates so that you remove the multiplicative
 
 		gviz_cmd <- sprintf("
 			digraph circles {
 
  		 # a 'graph' statement
-				graph [overlap = true, fontsize = 10]
+				graph [overlap = true, fontsize = 10, rankdir = %s]
 
  		 # several 'node' statements
 				node [shape = circle,
 				fontname = Helvetica,
 				style = filled,
 				color = grey,
-				fillcolor = steelblue]
+				fillcolor = lightsteelblue]
 				%s
 
  		 # several 'edge' statements
 				edge[color = grey]
 				%s
 			}
-			", node_statement, edge_statement)
+			", direction, node_statement, edge_statement)
 
 		return(grViz(gviz_cmd, engine = engine))
 
@@ -101,7 +154,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 	if(is.null(path)){
 
 		path <- ssm$hidden$last_path
-		
+
 		if(is.null(path)){
 			stop("Argument",sQuote("path"),"required", call.=FALSE)	
 		}
@@ -121,7 +174,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 		}
 
 		if(length(X_files)>1){
-			
+
 			# if more than one, take ssm$summary$id. If missing, send error
 			id <- ssm$summary[["id"]]
 			if(is.null(id)){
@@ -134,14 +187,14 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 		df_X <- file.path(path,X_files) %>% read.csv
 
 	}
-	
+
 	# tidy
 	df_X <- df_X %>% mutate(date=as.Date(date)) %>% gather(state, value, -date, -index)  
 
 	if(collapse_erlang){
 
 		df_X <- collapse_erlang(df_X)
-		
+
 	}
 
 	# separate pop only if collapse_erlang. Otherwise we loose erlang order as always last.
@@ -224,7 +277,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 	}
 
 	p <- p + geom_point(data=df_data, aes(y=value))
-	
+
 	print(p)
 
 	# add to ssm plot
