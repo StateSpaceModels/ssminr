@@ -36,7 +36,11 @@ reaction_split <- function(from, split_to, description=NULL, rate, accumulators=
 
 	to <- names(split_to)
 
-	reactions <- mapply(reaction, from, to, description, rate, accumulators, MoreArgs = list(keywords=keywords), SIMPLIFY=FALSE, USE.NAMES=FALSE)
+	if(!is.null(accumulators)){
+		reactions <- mapply(reaction, from, to, description, rate, accumulators, MoreArgs = list(keywords=keywords), SIMPLIFY=FALSE, USE.NAMES=FALSE)		
+	} else {
+		reactions <- mapply(reaction, from, to, description, rate, MoreArgs = list(keywords=keywords), SIMPLIFY=FALSE, USE.NAMES=FALSE)
+	}
 
 	for(i in seq_along(split_to)){
 
