@@ -43,6 +43,6 @@ discretized_normal_obs <- function(obs=NULL, state=NULL, reporting, overdispersi
 
 	x <- set_obs_variable(obs, state)
 
-	return(list(name=x$obs, distribution="discretized_normal",mean=sprintf("%s * (%s)", reporting, x$state), sd = sprintf("sqrt(%s * ( 1.0 - %s ) * (%s) + pow(%s * %s * (%s),2))", reporting, reporting,  x$state, reporting, overdispersion, x$state)))
+	return(list(name=x$obs, distribution="discretized_normal",mean=sprintf("%s * (%s)", reporting, x$state), sd = sprintf("sqrt(%s * (%s) + %s * pow(%s * (%s),2))", reporting, reporting,  x$state, overdispersion, reporting, x$state)))
 
 }
