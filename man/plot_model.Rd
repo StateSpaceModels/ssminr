@@ -5,7 +5,8 @@
 \title{Interactive display of SSM model}
 \usage{
 plot_model(ssm, collapse_erlang = TRUE, display = c("network", "diagramme"),
-  engine = "dot")
+  engine = "dot", label_size_max = Inf, simplify_state_names = TRUE,
+  direction = "LR")
 }
 \arguments{
 \item{ssm}{a \code{\link{ssm}} object}
@@ -13,6 +14,8 @@ plot_model(ssm, collapse_erlang = TRUE, display = c("network", "diagramme"),
 \item{collapse_erlang}{logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.}
 
 \item{display}{logical, if \code{TRUE} erlang compartments are collapsed into a single compartment to improve visibility.}
+
+\item{direction}{character, direction of the flowchart (\code{display=="diagramme"} only). Available options are \code{LR} (left to right, by default), \code{TB} (top to bottom), \code{RL} and \code{BT}.}
 }
 \description{
 This function displays the SSM model as a force network or a diagramme in a web browser, allowing for manipulation.

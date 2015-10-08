@@ -5,8 +5,8 @@
 \title{Create SSM input}
 \usage{
 input(name, description = NULL, value = NULL, prior = NULL,
-  transformation = NULL, to_resource = NULL, sde = NULL, tag = c("none",
-  "remainder", "pop_size"))
+  transformation = NULL, to_resource = NULL, sde = NULL, force = FALSE,
+  tag = c("none", "remainder", "pop_size"))
 }
 \arguments{
 \item{name}{character, name of the input}
@@ -22,6 +22,8 @@ input(name, description = NULL, value = NULL, prior = NULL,
 \item{sde}{define a stochastic differential equation on the input (see example)}
 
 \item{tag}{character, tag for specific inputs. Set to one among:}
+
+\item{file_name}{character, name of the file}
 }
 \description{
 Create an input parameter for SSM
