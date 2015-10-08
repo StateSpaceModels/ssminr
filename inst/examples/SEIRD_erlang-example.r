@@ -39,8 +39,8 @@ data(ebola_2014)
 data <- liberia1 %>% gather(time_series, value, -date)
 
 # the model will be created in the default temporary directory. Change the path to "wherever/you/want".
-# dir_model <- tempdir()
-dir_model <- path.expand("~/Desktop")
+dir_model <- tempdir()
+# dir_model <- path.expand("~/Desktop")
 
 my_ssm <- new_ssm(
 	model_path=file.path(dir_model,"SEIRD_erlang"),
@@ -53,8 +53,7 @@ my_ssm <- new_ssm(
 	erlang_shapes=Erlang_shapes
 	)
 
-# plot_model(my_ssm, display="network",  collapse_erl=FALSE)
-plot_model(my_ssm, display="diag", collapse_erl=FALSE)
+# plot_model(my_ssm, display="diag", collapse_erl=FALSE)
 
 # # Have fun.. 
 
