@@ -8,7 +8,7 @@
 #' @param direction character, direction of the flowchart (\code{display=="diagramme"} only). Available options are \code{LR} (left to right, by default), \code{TB} (top to bottom), \code{RL} and \code{BT}.
 #' @export
 #' @import networkD3 DiagrammeR
-plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagramme"), engine = "dot", label_size_max=Inf, simplify_state_names = TRUE, direction = "LR") {
+plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagramme"), engine = "dot", label = TRUE, label_size_max=Inf, simplify_state_names = TRUE, direction = "LR") {
 
 	display <- match.arg(display)
 
@@ -21,6 +21,7 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 
 		erlang_shapes <- ssm$erlang_shapes
 		erlang_states <- names(erlang_shapes)
+		df_erlang <- data_frame(from= erlang_states, shape=erlang_shapes)
 
 		remove_to <- sapply(erlang_states, function(erlang_state) erlang_state %>% erlang_name(2:(erlang_shapes[erlang_state]))) %>% unlist
 
@@ -28,18 +29,26 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 		names(revalue_from) <- sapply(erlang_states, function(erlang_state) erlang_state %>% erlang_name((erlang_shapes[erlang_state]))) %>% unlist
 
 		revalue_sum <- erlang_states
-		names(revalue_sum) <- sapply(erlang_states, function(erlang_state) erlang_state %>% erlang_name(1:(erlang_shapes[erlang_state])) %>% paste(collapse=" + ") %>% protect) %>% unlist
+		names(revalue_sum) <- sapply(erlang_states, function(erlang_state) erlang_state %>% erlang_name(1:(erlang_shapes[erlang_state])) %>% paste(collapse=" + ")) %>% unlist
 
 		network_data <- network_data %>% mutate(from=revalue(from, revalue_from)) %>%
 		filter(!to%in%remove_to) %>% gather(type, state, -c(reaction, rate)) %>% 
 		mutate(state=str_replace_all(state, "__erlang_[0-9]+", "")) %>% spread(type, state) 
 
+		# replace sum of erlang compartments in the rates
 		rate <- network_data$rate
 		for(sum_name in names(revalue_sum)){
-			# need to use fixed() because of the parenthesis
+			# need to use fixed() because of the special charcaters
 			rate <- str_replace_all(rate, fixed(sum_name), revalue_sum[[sum_name]]) 
 		}
 		network_data$rate <- rate	
+		
+		# if from is an erlang compartment => divide rate 
+		network_data <- network_data %>% left_join(df_erlang, by="from") %>% replace_na(list(shape=1)) %>% mutate(rate = sprintf("(%s)/%s", rate, shape)) %>% select(-shape)
+
+		# simplify	
+		all_var <- c(get_name(my_ssm$inputs),revalue_sum %>% unname)
+		network_data <- network_data %>% mutate(rate = sympy_simplify(rate, all_var))		
 
 	}
 
@@ -94,12 +103,16 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 			network_data <- network_data %>% mutate(rate = rate %>% str_sub(start=1L, end=label_size_max) %>% paste0("..."))
 		}
 
+		if(!label){
+
+			network_data <- network_data %>% mutate( rate = "")
+
+		}
+
 		edge_statement <- network_data %>% unite(edge, c(from, to), sep="->") %>% 
 		mutate(edge = sprintf("%s [label = <%s>]", edge, rate)) %>% 
 		select(edge) %>% unlist %>% unname %>% paste(collapse=" ") %>% convert_symbol(to="html")			
 		
-		# TODO: modify erlang rates so that you remove the multiplicative
-
 		gviz_cmd <- sprintf("
 			digraph circles {
 
