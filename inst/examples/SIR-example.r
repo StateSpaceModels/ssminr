@@ -3,7 +3,7 @@ SIR_inputs <- list(
 	input(name="S", description="initial number of susceptible", tag="remainder"),
 	input(name="R", description="initial number of recovered", value=0),
 	input(name="d_infectious", description="infectious period", value=10),
-	input(name="I", description="initial number of infectious", prior=unif(1,1000)), 
+	input(name="I", description="initial number of infectious", prior=unif(1,1000), value=10), 
 	input(name="vol", description="vol on beta", prior=unif(0,1)), 
 	input(name="R0", description="basic reproduction number", prior=unif(0,5)), 
 	input(name="rho", description="reporting rate", prior=truncnorm(mean=0.5,sd=0.1,a=0, b=1)),
@@ -25,8 +25,8 @@ data(ebola_2014)
 data <- liberia2 %>% gather(time_series, value, -date)
 
 # the model will be created in the default temporary directory. Change the path to "wherever/you/want".
-dir_model <- tempdir()
-# dir_model <- path.expand("~/Desktop")
+# dir_model <- tempdir()
+dir_model <- path.expand("~/Desktop")
 
 my_ssm <- new_ssm(
 	model_path=file.path(dir_model,"SIR_ssm"),
@@ -42,6 +42,8 @@ my_ssm <- new_ssm(
 # plot_data(my_ssm)
 
 # # Have fun.. 
+my_ssm %>% simul %>% plot_X
+
 # my_ssm_fit_ode <- my_ssm %>% simplex(iter=1000) %>% print %>% pmcmc(iter=1000) %>% print %>% to_tracer %>% plot_X
 # my_ssm_fit_sde <- my_ssm %>% ksimplex(iter=1000) %>% kmcmc(iter=10000) %>% plot_X(stat="median", hat=c(0.95, 0.5))
 # my_ssm_fit_psr <- my_ssm_fit_sde %>% pmcmc(id=1, approx="psr", n_parts=100, iter=1000, n_thread="max")
