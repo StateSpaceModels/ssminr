@@ -20,8 +20,8 @@
 #' @import dplyr rjson
 #' @importFrom plyr l_ply llply dlply
 #' @importFrom magrittr not
-#' @example inst/examples/SIR-example.r
-new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observations, erlang_shapes = NULL, states_in_SF = FALSE) {
+#' @example inst/examples/SEIRD_erlang-example.r
+new_ssm <- function(model_path, pop, data, start_date, inputs, force_input=NULL, reactions, observations, erlang_shapes = NULL, states_in_SF = FALSE) {
 
 	# list directories
 	if(!file.exists(model_path)){
@@ -43,6 +43,21 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 			dir.create(dir)
 		}
 	})
+
+	# TEMPORARY
+	# write forced input
+	if(!is.null(force_input)){
+
+		write_input <- function(x) {
+
+			theta_name <- x$theta %>% unique
+			x %>% spread(theta, value) %>% write.csv(file.path(dir_data, paste0(theta_name,".csv")),row.names=FALSE)
+			return(x)
+		}
+
+		toto <- force_input %>% mutate(date=as.character(date)) %>% group_by(theta) %>% do(write_input(.))
+
+	}
 
 	# check erlang_shapes
 	erlang_shapes <- erlang_shapes[erlang_shapes > 1]
@@ -204,6 +219,12 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 		reactions[[i]]$rate <- sprintf("(%s)*heaviside(%s - 1)", reactions[[i]]$rate, reactions[[i]]$from)		
 	}
 
+	# simplify rates
+	var_names <- get_name(inputs)
+	all_rates <- get_element(reactions, "rate") %>% sympy_simplify(var_names) 
+	for(i in seq_along(all_rates)){
+		reactions[[i]]$rate <- all_rates[i]
+	}
 
 	# CREATE POPULATIONS ---------------------------------------------------------------------
 
@@ -227,7 +248,6 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 			return(reaction)
 		})
-
 
 	}
 
@@ -303,7 +323,6 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 	# check if value is provided, if so set init
 	theta_values <- input_values[names(init_theta)] %>% unlist
 	init_theta[names(theta_values)] <- theta_values
-
 	# default covmat
 	init_covmat <- diag(init_theta/10)
 	colnames(init_covmat) <- rownames(init_covmat) <- names(init_theta)
