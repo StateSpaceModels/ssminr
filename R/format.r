@@ -27,3 +27,37 @@ convert_symbol <- function(x, to=c("html","latex")) {
 	}
 
 }
+
+
+
+#'Simplify symbolic expression
+#'
+#'Simplify symbolic epxression using rSymPy
+#' @param x character vector containing symbolic expressions to be simplified
+#' @param  var_names variables appearing in \code{x}
+#' @export
+#' @import rSymPy
+sympy_simplify <- function(x, var_names) {
+
+	# remove space
+	x <- str_replace_all(x, " ","")
+
+	# special functions
+	reserved <- c('U', 'x', 't', 'E', 'LN2', 'LN10','LOG2E', 'LOG10E', 'PI', 'SQRT1_2', 'SQRT2') #JS Math Global Object
+	special_functions <- c('terms_forcing', 'heaviside', 'ramp', 'slowstep', 'sigmoid', 'sin', 'cos', 'correct_rate', 'ssm_correct_rate', 'sqrt', 'pow', 'exp', 'log')
+
+	sink(file.path(tempdir(),"null"))
+	all_var <- c(var_names, reserved, special_functions) %>% sapply(Var)
+	new_x <- try(sapply(x, function(xx) {print(Var(xx))})) %>% unname
+	sink()
+
+	if(inherits(new_x, "try-error")){
+		return(x)
+	} else {
+		return(new_x)
+	}
+
+}
+
+
+
