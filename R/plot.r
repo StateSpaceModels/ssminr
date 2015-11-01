@@ -157,7 +157,7 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 #' @param  fit_only logical, whether to show only the fit to the data.
 #' @inheritParams call_ssm
 #' @export
-#' @import ggplot2 tidyr dplyr
+#' @import ggplot2 tidyr dplyr readr
 #' @seealso \code{\link{plot_theta}}
 #' @return a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
 plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=NULL, scales="free_y", fit_only=FALSE, collapse_erlang=TRUE) {
@@ -175,7 +175,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 
 	if(!is.null(id)){
 
-		df_X <- sprintf("X_%s.csv",id) %>% file.path(path,.) %>% read.csv
+		df_X <- sprintf("X_%s.csv",id) %>% file.path(path,.) %>% read_csv
 
 	} else {
 
@@ -197,7 +197,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 
 		}
 
-		df_X <- file.path(path,X_files) %>% read.csv
+		df_X <- file.path(path,X_files) %>% read_csv
 
 	}
 
@@ -268,7 +268,9 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 		}
 	}
 
-	p <- ggplot(data=df_plot, aes(x=date)) + facet_wrap(pop~state, scales=scales)
+
+	facet_formula <- ifelse("pop"%in%names(df_plot), "pop~state", "~state") %>% as.formula
+	p <- ggplot(data=df_plot, aes(x=date)) + facet_wrap(facet_formula, scales=scales)
 
 	if(is.null(hat)){
 		# plot traj

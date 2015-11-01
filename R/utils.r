@@ -47,6 +47,7 @@ find_element <- function(x, key, value) {
 #' @param  id numeric, indicate which \code{trace_*.csv} to choose. If \code{NULL} (default), use the \code{id} of the last block (default to 0 in SSM).
 #' @inheritParams call_ssm
 #' @inheritParams plot_X
+#' @import readr
 #' @export
 to_tracer <- function(ssm, path=NULL, id=NULL) {
 
@@ -84,7 +85,7 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 
 		}
 
-		df_trace <- file.path(path,trace_files) %>% read.csv
+		df_trace <- file.path(path,trace_files) %>% read_csv
 
 	}
 
@@ -114,6 +115,13 @@ get_state_variables <- function(reactions) {
 	x[names(x)%in%c("from","to")] %>% unique %>% return
 
 }
+
+
+
+
+
+	
+
 
 
 # df_tracer <- as.data.frame(my_mcmc_burn_thin_combined)
