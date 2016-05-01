@@ -5,11 +5,9 @@
 \alias{sde}
 \title{Define SDE on SSM inputs}
 \usage{
-diffusion(drift, volatility, transformation = c("none", "log"))
+diffusion(volatility, transformation = c("none", "log"))
 }
 \arguments{
-\item{drift}{character, formula for drift term}
-
 \item{volatility}{character, name of the volatility parameter}
 
 \item{transformation}{character, define a transformation for the input parameter (none by default). The diffusion is then defined for the transformed parameter:
