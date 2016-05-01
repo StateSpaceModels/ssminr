@@ -11,7 +11,7 @@ SEIRD_inputs <- list(
 	input(name="R0", description="basic reproduction number", prior=unif(0,5), value=2), 
 	input(name="rho", description="reporting rate", prior=truncnorm(mean=0.5,sd=0.1,a=0, b=1), value=0.5),
 	input(name="phi", description="overdispersion", prior=unif(0,1), value=0.5),
-	input(name="vol", description="volatility on log(beta)", prior=unif(0,1), value=0.1),
+	# input(name="vol", description="volatility on log(beta)", prior=unif(0,1), value=0.1),
 	input(name="d_infectious", description="average infectious period",transformation="d_onset2death*cfr + d_onset2recovery*(1-cfr)"),
 	input(name="E", description="initial number incubating",transformation="I*d_incubation/d_infectious"),
 	input(name="I_D", description="initial number of infectious deamed to die", transformation="I*cfr"), 
@@ -29,7 +29,7 @@ SEIRD_reactions <- list(
 	reaction(from="I_D", to="D", description="death", rate="mu")
 	)
 
-Erlang_shapes <- c(E=2, I_D=4, I_R=3)
+Erlang_shapes <- c(E=1, I_D=1, I_R=1)
 
 SEIRD_observations <- list(
 	discretized_normal_obs(state="incidence", reporting="rho", overdispersion="phi")
@@ -40,7 +40,8 @@ data <- liberia1 %>% gather(time_series, value, -date)
 
 # the model will be created in the default temporary directory. Change the path to "wherever/you/want".
 # dir_model <- tempdir()
-dir_model <- path.expand("~/Desktop")
+# dir_model <- path.expand("~/Desktop")
+dir_model <- "/Users/Tonton/work/presentations/talks/2016_02_Princeton/"
 
 my_ssm <- new_ssm(
 	model_path=file.path(dir_model,"SEIRD_erlang"),
@@ -53,10 +54,14 @@ my_ssm <- new_ssm(
 	erlang_shapes=Erlang_shapes
 	)
 
-plot_model(my_ssm, display="diag", collapse_erl=FALSE)
+# plot_data(my_ssm)
+
+# plot_model(my_ssm, collapse_erl=FALSE)
+# plot_model(my_ssm, collapse_erl=TRUE)
 
 # # Have fun.. 
-# my_ssm %>% simul %>% plot_X
+# my_ssm %>% simul("ode", n_parts = 1) %>% plot_X
+
 # my_ssm_fit_ode <- my_ssm %>% pmcmc(iter=1000)
 # my_ssm_fit_ode <- my_ssm %>% simplex(iter=1000) %>% pmcmc(iter=100000)
 # my_ssm_fit_sde <- my_ssm_fit_ode %>% ksimplex(iter=1000) %>% kmcmc(iter=1000)
