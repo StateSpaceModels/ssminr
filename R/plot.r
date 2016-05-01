@@ -8,7 +8,7 @@
 #' @param direction character, direction of the flowchart (\code{display=="diagramme"} only). Available options are \code{LR} (left to right, by default), \code{TB} (top to bottom), \code{RL} and \code{BT}.
 #' @export
 #' @import networkD3 DiagrammeR
-plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagramme"), engine = "dot", label = TRUE, label_size_max=Inf, simplify_state_names = TRUE, direction = "LR") {
+plot_model <- function(ssm, collapse_erlang = TRUE, display=c("diagramme", "network"), engine = "dot", label = TRUE, label_size_max=Inf, simplify_state_names = TRUE, direction = "LR") {
 
 	display <- match.arg(display)
 
@@ -17,7 +17,7 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 	rate <- get_element(ssm$reactions, "rate")
 	network_data <- data_frame(reaction= seq_along(from), from, to, rate)
 
-	if(collapse_erlang){
+	if(collapse_erlang & !is.null(ssm$erlang_shapes)){
 
 		erlang_shapes <- ssm$erlang_shapes
 		erlang_states <- names(erlang_shapes)
@@ -160,7 +160,7 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("network","diagram
 #' @import ggplot2 tidyr dplyr readr
 #' @seealso \code{\link{plot_theta}}
 #' @return a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
-plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=NULL, scales="free_y", fit_only=FALSE, collapse_erlang=TRUE) {
+plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), hat=NULL, scales="free_y", fit_only=FALSE, collapse_erlang=TRUE) {
 
 	stat <- match.arg(stat)
 
@@ -175,34 +175,42 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 
 	if(!is.null(id)){
 
-		df_X <- sprintf("X_%s.csv",id) %>% file.path(path,.) %>% read_csv
+		X_file <- sprintf("X_%s.csv",id)
 
 	} else {
 
 		# search for all X_* in path
-		X_files <- list.files(path) %>% grep("X_*",.,value=TRUE)
+		X_file <- list.files(path) %>% grep("X_*",.,value=TRUE)
 
-		if(length(X_files)==0){
+		if(length(X_file)==0){
 			stop("No X files in directory", dQuote(path),"..... The Truth is Out There")
 		}
 
-		if(length(X_files)>1){
+		if(length(X_file)>1){
 
 			# if more than one, take ssm$summary$id. If missing, send error
 			id <- ssm$summary[["id"]]
 			if(is.null(id)){
-				stop("Use numeric argument",sQuote("id"),"to select one file among:",sQuote(X_files))
+				stop("Use numeric argument",sQuote("id"),"to select one file among:",sQuote(X_file))
 			}
-			X_files <- sprintf("X_%s.csv",id)
+			X_file <- sprintf("X_%s.csv",id)
 
 		}
 
-		df_X <- file.path(path,X_files) %>% read_csv
-
 	}
 
-	# tidy
-	df_X <- df_X %>% mutate(date=as.Date(date)) %>% gather(state, value, -date, -index)  
+
+	# make everything double except date
+	# get col names
+	col_names <- file.path(path,X_file) %>% read_csv(n_max = 0) %>% names
+	col_types <- rep("d", length(col_names))
+	names(col_types) <- col_names
+	col_types["date"] <- "D"
+	col_types <- col_types %>% paste(collapse="")
+
+	df_X <- read_csv(file.path(path,X_file), col_types = col_types) %>%  
+	mutate(date=as.Date(date)) %>% 
+	gather(state, value, -date, -index)  
 
 	if(collapse_erlang){
 
@@ -210,7 +218,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 
 	}
 
-	# separate pop only if collapse_erlang. Otherwise we loose erlang order as always last.
+	# separate pop only if collapse_erlang. Otherwise we loose erlang order (always last).
 	if(collapse_erlang && any(str_detect(df_X$state, pop_name()))){
 
 		df_X_pop <- df_X %>% filter(str_detect(state, pop_name())) %>% separate(state, c("state","pop"), sep=pop_name())
@@ -231,7 +239,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 	if(!is.null(hat)){
 
 		prob <- c((1-hat)/2,(1+hat)/2) %>% unique %>% sort 
-		dots_summarize <- as.list(sprintf("stats::quantile(value, %s, type=1)",prob))	
+		dots_summarize <- as.list(sprintf("stats::quantile(value, %s, type=1, na.rm = TRUE)",prob))	
 		dots_group_by <- setdiff(names(df_X), c("value","index"))
 
 		hat_label <- paste0(sort(hat)*100,"%")
@@ -268,9 +276,10 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 		}
 	}
 
-
 	facet_formula <- ifelse("pop"%in%names(df_plot), "pop~state", "~state") %>% as.formula
 	p <- ggplot(data=df_plot, aes(x=date)) + facet_wrap(facet_formula, scales=scales)
+
+
 
 	if(is.null(hat)){
 		# plot traj
@@ -293,7 +302,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none","mean","median"), hat=
 
 	p <- p + geom_point(data=df_data, aes(y=value))
 
-	print(p)
+	print(p + theme_minimal())
 
 	# add to ssm plot
 	ssm$plot$X <- p
@@ -319,14 +328,19 @@ plot_data <- function(ssm, scales="free_y") {
 
 	if(any(str_detect(df_data$state, pop_name()))){
 
-		df_data_pop <- df_data %>% filter(str_detect(state, pop_name())) %>% separate(state, c("state","pop"), sep=pop_name())
-		df_data <- df_data %>% filter(!str_detect(state, pop_name())) %>% bind_rows(df_data_pop) %>% arrange(date, pop, state)
+		df_data <- df_data %>% separate(state, c("state","pop"), sep=pop_name())
+		# Not sure in what situation I would have some time-series with _pop_ and some other without..
+		# df_data_pop <- df_data %>% filter(str_detect(state, pop_name())) %>% separate(state, c("state","pop"), sep=pop_name())
+		# df_data <- df_data %>% filter(!str_detect(state, pop_name())) %>% mutate(pop = ) %>% bind_rows(df_data_pop) %>% arrange(date, pop, state)
+
+	} else {
+
+		df_data <- df_data %>% mutate(pop = ssm$pop)
 
 	}
 
-
-	p <- ggplot(data, aes(x=date, y=value)) + facet_wrap(pop~state, scales=scales)
-	p <- p + geom_bar(stat="identity")
+	p <- ggplot(df_data, aes(x=date, y=value)) + facet_wrap(pop~state, scales=scales)
+	p <- p + geom_line() + geom_point() + theme_minimal()
 	print(p)
 
 	# add to ssm plot
