@@ -1,28 +1,28 @@
 # R interface to the SSM library
 
-[SSM](https://github.com/JDureau/ssm) is a C library to perform inference for time series analysis with State Space Models, like playing with duplo blocks. `SSMinR` is a [R](http://cran.r-project.org) package that provides an interface to SSM.
+[SSM](https://github.com/StateSpaceModels/ssm) is a C library to perform inference for time series analysis with State Space Models, like playing with duplo blocks. `ssminr` is a [R](http://cran.r-project.org) package that provides an interface to SSM.
 
 # Installation
 
-Before installing `SSMinR`, make sure you have installed the SSM library by following these [instructions](https://github.com/JDureau/ssm). Note that SSM only works on Unix machines. If you run Windows, you will need to set up a virtual machine.
+Before installing `ssminr`, make sure you have installed the SSM library by following these [instructions](https://github.com/StateSpaceModels/ssm). Note that SSM only works on Unix machines. If you run Windows, you will need to set up a virtual machine.
 
-Assuming that SSM and R are installed on your machine, the easiest way to install `SSMinR` is to use the `devtools` package:
+Assuming that SSM and R are installed on your machine, the easiest way to install `ssminr` is to use the `devtools` package:
 
 ```r
 # install.packages("devtools")
 library(devtools)
-install_github("ntncmch/SSMinR")
+install_github("StateSpaceModels/ssminr")
 ```
 
-To work with `SSMinR`: fire up `R`, and type 
+To work with `ssminr`: fire up `R`, and type 
 
 ```r
-library(SSMinR)
+library(ssminr)
 ```
 
 # Before compiling your model
 
-`SSMinR` compiles your model by calling `SSM` from your `R` session using the function `system()`. As such, when compilating, `SSM` asks `R` where to find the header files as well as the librairy dependencies needed.
+`ssminr` compiles your model by calling `SSM` from your `R` session using the function `system()`. As such, when compilating, `SSM` asks `R` where to find the header files as well as the librairy dependencies needed.
 
 Outside of `R`, these information are generally stored in the environment variables `CPATH` (path to header files) and `LIBRARY_PATH` (path to librairy dependencies). You can check this in your terminal by typing:
 

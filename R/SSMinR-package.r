@@ -1,6 +1,6 @@
-#' SSMinR
+#' ssminr
 #'
-#' @name SSMinR
+#' @name ssminr
 #' @docType package
 NULL
 
