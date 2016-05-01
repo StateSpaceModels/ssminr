@@ -273,7 +273,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, force_input=NULL,
 		# drift
 		drift <- llply(sde, function(x) {
 
-			tmp <- list(name=x$name, f=0)
+			tmp <- list(name=x$name, drift=x$drift)
 
 			if(x$transformation!="none"){
 
