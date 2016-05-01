@@ -98,7 +98,7 @@ my_ssm <- new_ssm(
 # plot_model(my_ssm, collapse_erl=TRUE)
 
 # # Have fun.. 
-my_ssm \%>\% simul("ode", n_parts = 1) \%>\% plot_X
+# my_ssm \%>\% simul("ode", n_parts = 1) \%>\% plot_X
 
 # my_ssm_fit_ode <- my_ssm \%>\% pmcmc(iter=1000)
 # my_ssm_fit_ode <- my_ssm \%>\% simplex(iter=1000) \%>\% pmcmc(iter=100000)
