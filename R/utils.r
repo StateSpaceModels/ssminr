@@ -63,7 +63,7 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 
 	if(!is.null(id)){
 
-		df_trace <- sprintf("trace_%s.csv",id) %>% file.path(path,.) %>% read.csv
+		df_trace <- sprintf("trace_%s.csv",id) %>% file.path(path,.) %>% read_csv
 
 	} else {
 
@@ -117,11 +117,16 @@ get_state_variables <- function(reactions) {
 }
 
 
+# calibrate_smc <- function(ssm, n_replicate=10, n_parts=seq(100, 1000, 100), ...){
 
+# 	browser()
 
+# 	x <- smc(ssm, n_parts=n_parts[1], ...)
 
+# 	x$summary[["log_likelihood"]]
 	
 
+# }
 
 
 # df_tracer <- as.data.frame(my_mcmc_burn_thin_combined)
