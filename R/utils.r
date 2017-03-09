@@ -63,7 +63,7 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 
 	if(!is.null(id)){
 
-		df_trace <- sprintf("trace_%s.csv",id) %>% file.path(path,.) %>% read_csv
+		df_trace <- sprintf("trace_%s.csv",id) %>% file.path(path,.) %>% read_csv(col_types = cols())
 
 	} else {
 
@@ -85,7 +85,7 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 
 		}
 
-		df_trace <- file.path(path,trace_files) %>% read_csv
+		df_trace <- file.path(path,trace_files) %>% read_csv(col_types = cols())
 
 	}
 
