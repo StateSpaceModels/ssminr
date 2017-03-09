@@ -25,4 +25,3 @@ Generate one or more \code{ssm} objects with \code{theta} sampled from the prior
 \seealso{
 \code{\link{one_theta_sample_prior}} \code{\link{one_ssm_sample_prior}}
 }
-

@@ -28,4 +28,3 @@ a \code{ssm} object updated with latest SSM output and ready to be piped into an
 \description{
 This is the core function to call SSM from R
 }
-

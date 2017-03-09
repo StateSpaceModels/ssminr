@@ -18,4 +18,3 @@ and 2014-12-03 for \code{liberia2}.
   \item \code{incidence_obs} weekly count incidence of confirmed and probable EVD cases
 }
 }
-

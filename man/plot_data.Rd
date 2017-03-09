@@ -14,4 +14,3 @@ plot_data(ssm, scales = "free_y")
 \description{
 Plot the data of your \code{ssm} object.
 }
-

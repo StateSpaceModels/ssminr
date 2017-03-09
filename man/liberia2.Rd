@@ -17,4 +17,3 @@ cases recorded during the 2014 Ebola outbreak in Liberia. The time-series span t
   \item \code{incidence_obs} weekly count incidence of confirmed and probable EVD cases
 }
 }
-

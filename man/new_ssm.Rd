@@ -67,7 +67,7 @@ SEIRD_reactions <- list(
 	reaction(from="I_D", to="D", description="death", rate="mu")
 	)
 
-Erlang_shapes <- c(E=1, I_D=1, I_R=1)
+Erlang_shapes <- c(E=2, I_D=3, I_R=1)
 
 SEIRD_observations <- list(
 	discretized_normal_obs(state="incidence", reporting="rho", overdispersion="phi")
@@ -94,7 +94,7 @@ my_ssm <- new_ssm(
 
 # plot_data(my_ssm)
 
-# plot_model(my_ssm, collapse_erl=FALSE)
+plot_model(my_ssm, collapse_erl=FALSE)
 # plot_model(my_ssm, collapse_erl=TRUE)
 
 # # Have fun.. 
@@ -122,4 +122,3 @@ my_ssm <- new_ssm(
 
 
 }
-

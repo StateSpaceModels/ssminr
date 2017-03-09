@@ -32,4 +32,3 @@ Function to plot state trajectories contained in the \code{X_*.csv} files genera
 \seealso{
 \code{\link{plot_theta}}
 }
-

@@ -2,8 +2,10 @@
 % Please edit documentation in R/reaction.r
 \name{reaction}
 \alias{reaction}
-\alias{reaction_NGM}
+\alias{reaction}
 \alias{reaction_split}
+\alias{reaction}
+\alias{reaction_NGM}
 \title{Create SSM reaction}
 \usage{
 reaction(from, to, description = NULL, rate, accumulators = NULL,
@@ -33,4 +35,3 @@ reaction_NGM(from, to, description = NULL, NGM, accumulators = NULL,
 \description{
 Create a reaction for SSM
 }
-

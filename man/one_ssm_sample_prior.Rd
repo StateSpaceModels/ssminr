@@ -18,4 +18,3 @@ Generate one sample \code{theta} of \code{ssm} from the prior distribution
 \seealso{
 \code{\link{one_theta_sample_prior}}
 }
-

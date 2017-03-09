@@ -85,4 +85,3 @@ a \code{ssm} object updated with latest SSM output and ready to be piped into an
 \description{
 Function to run a Maximum-likelihood via Iterated Filtering algorithm.
 }
-

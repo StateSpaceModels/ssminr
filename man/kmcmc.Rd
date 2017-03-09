@@ -76,4 +76,3 @@ a \code{ssm} object updated with latest SSM output and ready to be piped into an
 \description{
 Function to run a MCMC using a Kalman filter to evaluate the log-likelihood. Only for the \code{sde} approximation of a \code{ssm}.
 }
-

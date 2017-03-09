@@ -20,4 +20,3 @@ plot_model(ssm, collapse_erlang = TRUE, display = c("diagramme", "network"),
 \description{
 This function displays the SSM model as a force network or a diagramme in a web browser, allowing for manipulation.
 }
-

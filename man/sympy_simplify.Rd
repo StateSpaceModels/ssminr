@@ -14,4 +14,3 @@ sympy_simplify(x, var_names)
 \description{
 Simplify symbolic epxression using rSymPy
 }
-

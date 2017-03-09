@@ -16,4 +16,3 @@ to_tracer(ssm, path = NULL, id = NULL)
 \description{
 Export to tracer
 }
-

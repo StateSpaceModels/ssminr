@@ -2,10 +2,13 @@
 % Please edit documentation in R/r2ssm.r
 \name{r2ssm}
 \alias{r2ssm}
-\alias{r2ssm_populations}
 \alias{r2ssm_prior}
+\alias{r2ssm}
 \alias{r2ssm_resources}
+\alias{r2ssm}
 \alias{ssm2r_resources}
+\alias{r2ssm}
+\alias{r2ssm_populations}
 \title{Convert R object into SSM object}
 \usage{
 r2ssm_prior(prior)
@@ -36,4 +39,3 @@ r2ssm_populations(pop, state_variables, remainder = NULL, pop_size = NULL)
 \description{
 Internal functions to convert R object into SSM
 }
-

@@ -25,4 +25,3 @@ Function to perform any SSM block on a LHS. The LHS is currently a random sample
 \seealso{
 \code{\link{get_max_lhs}}
 }
-

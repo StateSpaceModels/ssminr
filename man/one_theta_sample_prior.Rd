@@ -14,4 +14,3 @@ one_theta_sample_prior(priors, theta_names = NULL)
 \description{
 Generate a sample from prior density distribution.
 }
-

@@ -79,4 +79,3 @@ a \code{ssm} object updated with latest SSM output and ready to be piped into an
 \description{
 Function to run a Sequential Monte-Carlo algorithm on a \code{ssm}
 }
-

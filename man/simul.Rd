@@ -65,4 +65,3 @@ a \code{ssm} object updated with latest SSM output and ready to be piped into an
 \description{
 Function to simulate a \code{ssm}.
 }
-

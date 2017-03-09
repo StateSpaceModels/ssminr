@@ -12,4 +12,3 @@
 \description{
 Function to print basic information on the \code{ssm}
 }
-

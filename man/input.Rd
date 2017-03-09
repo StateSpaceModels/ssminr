@@ -36,4 +36,3 @@ Create an input parameter for SSM
 \seealso{
 \code{\link{prior}}
 }
-

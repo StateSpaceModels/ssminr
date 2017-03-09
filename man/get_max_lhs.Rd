@@ -18,4 +18,3 @@ Extract the \code{ssm} object with highest log-likelihood from \code{lhs}.
 \seealso{
 \code{\link{do_lhs}}
 }
-

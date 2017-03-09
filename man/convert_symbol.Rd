@@ -14,4 +14,3 @@ convert_symbol(x, to = c("html", "latex"))
 \description{
 Symbols must be expressed as a string to be converted.
 }
-
