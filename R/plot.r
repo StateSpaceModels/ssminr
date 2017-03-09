@@ -202,7 +202,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), ha
 
 	# make everything double except date
 	# get col names
-	col_names <- file.path(path,X_file) %>% read_csv(n_max = 0) %>% names
+	col_names <- file.path(path,X_file) %>% read_csv(n_max = 0, col_types = cols()) %>% names
 	col_types <- rep("d", length(col_names))
 	names(col_types) <- col_names
 	col_types["date"] <- "D"
@@ -255,7 +255,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), ha
 		df_plot <- df_X
 	}
 
-	df_data <- ssm$data %>% rename(state=time_series)
+	df_data <- ssm$data %>% dplyr::rename(state=time_series)
 
 	if(collapse_erlang && any(str_detect(df_data$state, pop_name()))){
 
@@ -324,7 +324,7 @@ plot_data <- function(ssm, scales="free_y") {
 		stop(sQuote("ssm"),"is not an object of class ssm")
 	}
 
-	df_data <- ssm$data %>% rename(state=time_series)
+	df_data <- ssm$data %>% dplyr::rename(state=time_series)
 
 	if(any(str_detect(df_data$state, pop_name()))){
 
