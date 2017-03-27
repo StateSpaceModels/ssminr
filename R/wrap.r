@@ -50,17 +50,27 @@ call_ssm <- function(ssm, approx=c("ode","sde","psr"), do=c("kalman","kmcmc","ks
 	# execute cmd 
 	system(cmd)
 
-	# update theta, covmat and summary
-	output <- ssm2r_resources(rjson::fromJSON(file=theta_out_path))
-	
-	ssm$theta <- output$theta
-	ssm$covmat <- output$covmat
-	if(!is.null(output$summary)){
-		ssm$summary <- output$summary		
-	}
+	# try to read output format
+	# deal with expected error when the output file is empty
+	# this might happen when doing a simplex
 
-	# save path to last job
-	ssm$hidden$last_path <- cmd_args$root
+	ssm_theta <- try(rjson::fromJSON(file=theta_out_path), silent = TRUE)
+
+	if(!inherits(ssm_theta, "try-error")){
+
+		# update theta, covmat and summary
+		output <- ssm2r_resources(ssm_theta)
+
+		ssm$theta <- output$theta
+		ssm$covmat <- output$covmat
+		if(!is.null(output$summary)){
+			ssm$summary <- output$summary		
+		}
+
+		# save path to last job
+		ssm$hidden$last_path <- cmd_args$root
+
+	} 
 
 	invisible(ssm)
 }
