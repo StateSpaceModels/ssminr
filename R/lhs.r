@@ -1,8 +1,18 @@
 get_ssm_log_like <- function(ssm) {
 	
 	x <- ssm$summary
+	
+	if(!is.null(x)){
+		log_like <- x[str_detect(names(x),"log_*")]
+	} else {
+		# this can happen when ssm ran into an error and no output was generated
+		# in case of LHS we still want to continue the execution by skipping the parameter set
+		# we use NA instead of -Inf to be explicit about ssm failure
+		log_like <- NA
+	}
 
-	data_frame(log_like=x[str_detect(names(x),"log_*")], ssm=list(ssm))
+	data_frame(log_like=log_like, ssm=list(ssm))
+
 
 }
 
@@ -16,7 +26,7 @@ get_ssm_log_like <- function(ssm) {
 #' @return \code{ssm} object
 get_max_lhs <- function(lhs) {
 
-	lhs %>% do(get_ssm_log_like(.$ssm)) %>% ungroup %>% filter(log_like==max(log_like)) %>% select(ssm) %>% .[[1,1]]
+	lhs %>% do(get_ssm_log_like(.$ssm)) %>% ungroup %>% filter(log_like==max(log_like, na.rm = TRUE)) %>% select(ssm) %>% .[[1,1]]
 
 }
 
