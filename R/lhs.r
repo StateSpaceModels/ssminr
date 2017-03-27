@@ -16,7 +16,7 @@ get_ssm_log_like <- function(ssm) {
 #' @return \code{ssm} object
 get_max_lhs <- function(lhs) {
 
-	lhs %>% do(get_ssm_log_like(.$ssm)) %>% filter(log_like==max(log_like)) %>% select(ssm) %>% .[[1,1]]
+	lhs %>% do(get_ssm_log_like(.$ssm)) %>% ungroup %>% filter(log_like==max(log_like)) %>% select(ssm) %>% .[[1,1]]
 
 }
 
