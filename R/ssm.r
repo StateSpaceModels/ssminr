@@ -44,20 +44,6 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, force_input=NULL,
 		}
 	})
 
-	# TEMPORARY
-	# write forced input
-	if(!is.null(force_input)){
-
-		write_input <- function(x) {
-
-			theta_name <- x$theta %>% unique
-			x %>% spread(theta, value) %>% write.csv(file.path(dir_data, paste0(theta_name,".csv")),row.names=FALSE)
-			return(x)
-		}
-
-		toto <- force_input %>% mutate(date=as.character(date)) %>% group_by(theta) %>% do(write_input(.))
-
-	}
 
 	# check erlang_shapes
 	erlang_shapes <- erlang_shapes[erlang_shapes > 1]
@@ -125,6 +111,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, force_input=NULL,
 		}
 	}) %>% remove_null
 
+
 	# CREATE INPUTS ---------------------------------------------------------------------
 	
 	if(!is.null(erlang_shapes)){
@@ -140,6 +127,12 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, force_input=NULL,
 		if(!is.null(input$prior)){
 			input$prior <- NULL
 			input$require <- list(name=input$name,path=file.path(dir_priors,paste0(input$name,".json")))
+		}
+
+		if(!is.null(input$forced_input)){
+			input$forced_input %>% write_csv(file.path(dir_data, paste0(input$name,".csv")))
+			input$forced_input <- NULL
+			input$require <- list(name=input$name, path=file.path(dir_data,paste0(input$name,".csv")), fields = c("date",input$name))
 		}
 
 		# remove value and tag
@@ -400,6 +393,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, force_input=NULL,
 		data = data,
 		start_date = start_date,
 		inputs = inputs,
+		forced_inputs = forced_inputs,
 		reactions = reactions,
 		observations = observations,
 		erlang_shapes=erlang_shapes),
