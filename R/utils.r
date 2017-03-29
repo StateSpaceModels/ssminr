@@ -96,7 +96,7 @@ to_tracer <- function(ssm, path=NULL, id=NULL) {
 	# TODO: get id and put it
 	write.table(df_trace,file=file.path(path,"tracer.txt"),row.names=FALSE,quote=FALSE,sep="\t")
 
-	return(ssm)
+	invisible(ssm)
 
 }
 
