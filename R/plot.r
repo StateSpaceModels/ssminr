@@ -263,6 +263,10 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), ha
 		df_data <- df_data %>% filter(!str_detect(state, pop_name())) %>% bind_rows(df_data_pop) %>% arrange(date, pop, state)
 
 	}
+	
+	# plot data on expected and ran observations
+	df_data_ran <- df_data %>% mutate(state = sprintf("ran_%s", state))
+	df_data <- df_data %>% bind_rows(df_data_ran)
 
 	by_names <- intersect(names(df_data), names(df_plot)) %>% setdiff("value")
 	df_data <- df_data %>% semi_join(df_plot, by=by_names)
@@ -300,7 +304,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), ha
 		p <- p + geom_line(data=df_stat, aes(y=value))
 	}
 
-	p <- p + geom_point(data=df_data, aes(y=value))
+	p <- p + geom_point(data=df_data, aes(y=value), shape = 1)
 
 	print(p + theme_minimal())
 
@@ -350,17 +354,133 @@ plot_data <- function(ssm, scales="free_y") {
 
 }
 
-# plot_theta <- function(ssm) {
 
-# 	# posterior vs prior distribution of parameters
+#'Plot priors
+#'
+#'Plot prior distribution as specified in \code{ssm} object.
+#' @param theta_names character, specify which theta priors to plot. By default (=\colde{NULL}) all theta priors are plotted.
+#' @param quantile_limits numeric, vector of length 2 specifying the limits of the priors in terms of quantile. Default to the 1% and 99% quantiles (=\code{c(0.01, 0.99)}).
+#' @param x_limits numeric, vector of length 2 specifying the limits of the priors in terms of theta. Default to \code{NULL}.
+#' @param plot logical, if \code{FALSE} a dataframe of prior values will be returned insread iof a plot
+#' @inheritParams call_ssm
+#' @inheritParams plot_X
+#' @export
+#' @import dplyr ggplot2
+#' @return either a \code{ggplot} or a \code{data.frame}
+plot_priors <- function(ssm, theta_names=NULL, quantile_limits=c(0.01,0.99), x_limits=NULL, plot=TRUE){
 
-# 	# get the root of the preceding function
+	priors <- ssm$priors
+	prior_names <- sapply(priors, function(x) {x$name})
+	names(priors) <- prior_names
+	
+	if(!is.null(theta_names)){
+		select_priors <- intersect(theta_names,names(priors))
+		priors <- priors[select_priors]
+	}
+
+	df_prior_names <- data_frame(theta=prior_names)
+
+	compute_plot <- function(prior_name) {
+
+		prior <- priors[[prior_name]]
+		x_range <- x_limits[[prior_name]]
+
+		if(is.null(x_range)){
+			x_range <- rep(NA,2)
+		}
+
+		if(any(is.na(x_range))){
+		# use quantile limits
+			qrior_dist <- paste0("q",prior$dist)
+			x_range[is.na(x_range)] <- do.call(qrior_dist,args=c(prior$args,list(p=quantile_limits[is.na(x_range)])))
+		}	
+
+		x <- seq(min(x_range),max(x_range),length=1000)
+
+		dprior <- paste0("d",prior$dist)
+		density <- do.call(dprior,c(prior$args,list(x=x)))
+		
+		return(data_frame(x=x, density=density))
+	}
+
+	df_dist <- group_by(df_prior_names, theta) %>% do(compute_plot(unlist(.))) %>% ungroup
+
+	if(plot){
+		p <- ggplot(df_dist,aes(x=x,y=density))+facet_wrap(~theta,scales="free")+geom_line()
+		print(p + theme_minimal())		
+	} else {
+		return(df_dist)
+	}
+}
 
 
+#'Plot priors and posteriors
+#'
+#'Plot priors and posteriors distribution for all estimated parameters.
+#' @inheritParams call_ssm
+#' @inheritParams plot_X
+#' @export
+#' @import ggplot2 tidyr dplyr readr
+#' @return a \code{ggplot} object
+plot_theta <- function(ssm, path=NULL, id=NULL, x_limits = NULL) {
 
-# 	# pass ssm to the next
-# 	invisible(ssm)
+	if(is.null(path)){
 
-# }
+		path <- ssm$hidden$last_path
+
+		if(is.null(path)){
+			stop("Argument",sQuote("path"),"required", call.=FALSE)	
+		}
+	}
+
+	if(!is.null(id)){
+
+		trace_file <- sprintf("trace_%s.csv",id)
+
+	} else {
+
+		# search for all X_* in path
+		trace_file <- list.files(path) %>% grep("trace_[0-9]+.csv",.,value=TRUE)
+
+		if(length(trace_file)==0){
+			stop("No trace files in directory", dQuote(path))
+		}
+
+		if(length(trace_file)>1){
+
+			# if more than one, take ssm$summary$id. If missing, send error
+			id <- ssm$summary[["id"]]
+			if(is.null(id)){
+				stop("Use numeric argument",sQuote("id"),"to select one file among:",sQuote(trace_file))
+			}
+			trace_file <- sprintf("trace_%s.csv",id)
+
+		}
+
+	}
+
+
+	df_posterior <- read_csv(file.path(path, trace_file), col_types = cols(.default = col_guess())) %>% 
+	gather(theta, value, -index, -fitness) %>% mutate(distribution = "posterior")  
+
+	# df_limits <- df_posterior %>% group_by(theta) %>% summarize(theta_min = min(value), theta_max = max(value))
+	
+	# compute prior
+	df_prior <- plot_priors(ssm, quantile_limits=c(0.0001,0.9999), x_limits = x_limits, plot=FALSE) %>% mutate(distribution = "prior")  
+	
+	p <- ggplot(df_prior, aes(fill = distribution)) + facet_wrap(~theta, scales="free")
+	p <- p + geom_area(data=df_prior, aes(x=x, y=density), alpha=0.4)
+	p <- p + geom_histogram(data=df_posterior, aes(x=value, y=..density..),alpha=0.6)
+	p <- p + scale_fill_discrete("Distribution", breaks=c("prior","posterior"))
+	p <- p + xlab("Theta") + ylab("Density")
+	p <- p + theme_minimal() + theme(legend.position="top")
+	print(p)
+
+	# add to ssm plot
+	ssm$plot$theta <- p
+
+	invisible(ssm)
+	
+}
 
 
