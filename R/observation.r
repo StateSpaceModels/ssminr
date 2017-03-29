@@ -46,3 +46,18 @@ discretized_normal_obs <- function(obs=NULL, state=NULL, reporting, overdispersi
 	return(list(name=x$obs, distribution="discretized_normal",mean=sprintf("%s * (%s)", reporting, x$state), sd = sprintf("sqrt(%s * (%s) + %s * pow(%s * (%s),2))", reporting,  x$state, overdispersion, reporting, x$state)))
 
 }
+
+
+#' @param  x_obs character, name of the column with the number of successes in the data
+#' @param  n_obs character, name of the column with the sample size in the data
+#' @param  p character, probability of success, usually a combination of the states and parameters of the model (e.g. \code{p="I/N"})
+#' @export
+#' @name obs
+#' @aliases binomial_obs
+binomial_obs <- function(x_obs=NULL, n_obs=NULL, p=NULL) {
+
+	return(list(name=x_obs, distribution="binomial", n = n_obs, p = p))
+
+}
+
+
