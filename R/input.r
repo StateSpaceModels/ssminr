@@ -9,10 +9,10 @@
 #' @param sde define a stochastic differential equation on the input (see example)
 #' @param file_name character, name of the file 
 #' @param tag character, tag for specific inputs. Set to one among:
-# \itemize{
-# 	\item "remainder" if the population size is assumed constant, the tagged state variable will be used as a remainder (see example)
-# 	\item "pop_size"  if the population size is assumed constant, the tagged parameter will be used to set the population size
-# }
+#' \itemize{
+#' 	\item "remainder" if the population size is assumed constant, the tagged state variable will be used as a remainder (see example)
+#' 	\item "pop_size"  if the population size is assumed constant, the tagged parameter will be used to set the population size
+#' }
 #' @export
 #' @seealso \code{\link{prior}}
 #' @examples \dontrun{

@@ -5,11 +5,15 @@
 \alias{poisson_obs}
 \alias{obs}
 \alias{discretized_normal_obs}
+\alias{obs}
+\alias{binomial_obs}
 \title{Observation processes for SSM}
 \usage{
 poisson_obs(obs = NULL, state = NULL, reporting)
 
 discretized_normal_obs(obs = NULL, state = NULL, reporting, overdispersion)
+
+binomial_obs(x_obs = NULL, n_obs = NULL, p = NULL)
 }
 \arguments{
 \item{obs}{character, name of the observation in the data}
@@ -19,6 +23,12 @@ discretized_normal_obs(obs = NULL, state = NULL, reporting, overdispersion)
 \item{reporting}{character, name of the reporting rate parameter}
 
 \item{overdispersion}{character, name of the overdispersion parameter}
+
+\item{x_obs}{character, name of the column with the number of successes in the data}
+
+\item{n_obs}{character, name of the column with the sample size in the data}
+
+\item{p}{character, probability of success, usually a combination of the states and parameters of the model (e.g. \code{p="I/N"})}
 }
 \description{
 SSM currently accept the following observation processes.

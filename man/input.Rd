@@ -21,7 +21,11 @@ input(name, description = NULL, value = NULL, prior = NULL,
 
 \item{sde}{define a stochastic differential equation on the input (see example)}
 
-\item{tag}{character, tag for specific inputs. Set to one among:}
+\item{tag}{character, tag for specific inputs. Set to one among:
+\itemize{
+    \item "remainder" if the population size is assumed constant, the tagged state variable will be used as a remainder (see example)
+    \item "pop_size"  if the population size is assumed constant, the tagged parameter will be used to set the population size
+}}
 
 \item{file_name}{character, name of the file}
 }
