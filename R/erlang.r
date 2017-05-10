@@ -131,7 +131,7 @@ make_erlang_inputs <- function(inputs, erlang_shapes) {
 
 		if(!is.null(input[[1]]$prior)){
 
-			# keep origianl input for prior and generate erlang input with transformation
+			# keep original input for prior and generate erlang input with transformation
 			new_input <- input
 			
 			new_input[[1]]$transformation <- sprintf("(%s)/(%s)", input[[1]]$name, erlang_shape)
