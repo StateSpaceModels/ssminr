@@ -26,7 +26,9 @@ get_ssm_log_like <- function(ssm) {
 #' @return \code{ssm} object
 get_max_lhs <- function(lhs) {
 
-	lhs %>% do(get_ssm_log_like(.$ssm)) %>% ungroup %>% filter(log_like==max(log_like, na.rm = TRUE)) %>% select(ssm) %>% .[[1,1]]
+	# sometimes log_like is > 0 or very close to 0 due to some error in SSM
+	# we use a thershold of -1e-7 as a fix
+	lhs %>% do(get_ssm_log_like(.$ssm)) %>% ungroup %>% filter(log_like < -1e-7) %>% filter(log_like==max(log_like, na.rm = TRUE)) %>% select(ssm) %>% .[[1,1]]
 
 }
 
