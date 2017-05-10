@@ -160,9 +160,11 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("diagramme", "netw
 #' @import ggplot2 tidyr dplyr readr
 #' @seealso \code{\link{plot_theta}}
 #' @return a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
-plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), hat=NULL, scales="free_y", fit_only=FALSE, collapse_erlang=TRUE) {
+plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), hat=NULL, scales="free_y", fit_only=FALSE, collapse_erlang=TRUE) {
 
 	stat <- match.arg(stat)
+
+	data_colour <- "#1f78b4"
 
 	if(is.null(path)){
 
@@ -210,7 +212,99 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), ha
 
 	df_X <- read_csv(file.path(path,X_file), col_types = col_types) %>%  
 	mutate(date=as.Date(date)) %>% 
-	gather(state, value, -date, -index)  
+	gather(state, value, -date, -index)
+
+	obs_var <- get_name(ssm$observations)
+	ran_obs_var <- sprintf("ran_%s", obs_var)
+
+	# TODO find accumulators and bind them to state_variables and search in obs parameter (mean etc)
+	# accumulators should be extracted at compilation 
+	# here for simplicity we assume that observation names are of the form state_obs so state can easily be retrieved
+	obs_state <- obs_var[str_detect(obs_var, "_obs")] %>% str_replace("_obs", "")
+
+	obs_dist <- get_element(ssm$observations, "distribution")
+	names(obs_dist) <- obs_var
+
+	# keep observed states and observations at the data dates
+	
+	df_data_obs <- ssm$data %>% rename(state = time_series)
+	df_data_ran_obs <- df_data_obs %>% mutate(state = sprintf("ran_%s", state))
+	df_data_state <- df_data_obs %>% filter(str_detect(state, "_obs")) %>% mutate(state = str_replace(state, "_obs", ""))
+
+	df_data_date <- bind_rows(df_data_obs, df_data_ran_obs, df_data_state)
+
+	df_X_obs <- df_X %>% filter(state %in% c(obs_var, obs_state, ran_obs_var)) %>% semi_join(df_data_date, c("date", "state"))
+
+	df_X <- df_X %>% anti_join(df_X_obs, "state") %>% bind_rows(df_X_obs)
+
+
+	
+# remove binomial observations
+	if(any(obs_dist == "binomial")) {
+
+		obs_binomial <- obs_dist[obs_dist == "binomial"]
+
+		df_X_binomial <- df_X %>% filter(state %in% c(names(obs_binomial), sprintf("ran_%s", names(obs_binomial))))
+
+		df_X <- df_X %>% anti_join(df_X_binomial, c("state"))
+
+		# binomial denominator
+		n_tested_name <- get_element(ssm$observation, "n")
+		names(n_tested_name) <- obs_var
+		n_tested_name <- unlist(n_tested_name)
+
+
+		df_n <- data_frame(n_name = n_tested_name, state = names(n_tested_name)) %>% 
+		group_by(n_name, state) %>% 
+		do(n = find_element(ssm$inputs, "name", .$n_name)[[1]]$value, date = find_element(ssm$inputs, "name", .$n_name)[[1]]$value %>% names %>% as.Date) %>% 
+		ungroup %>% 
+		unnest(n, date) %>% 
+		filter(n != 0)
+
+		df_n_ran <- df_n %>% mutate(state = sprintf("ran_%s", state))
+
+		df_n <- df_n %>% bind_rows(df_n_ran)
+
+		
+		# binomial posterior
+		df_prop <- df_X_binomial %>% left_join(df_n, by = c("date", "state")) %>% mutate(p = value/n*100)
+
+		# binomial data + 95% CI
+		df_data_prop <- ssm$data %>% rename(state = time_series) %>% inner_join(df_n, by = c("date", "state")) %>% 
+		group_by(date, state) %>% 
+		do(binom.confint(.$value, .$n, methods = "exact")) %>% 
+		ungroup %>% 
+		gather(variable, value, c(mean, lower, upper)) %>% 
+		mutate(value  =value*100) %>% 
+		spread(variable, value)
+		
+		## add ran_
+		df_data_prop_ran <- df_data_prop %>% mutate(state = sprintf("ran_%s", state))
+		df_data_prop <- df_data_prop %>% bind_rows(df_data_prop_ran)
+
+		# plot
+		p <- ggplot(df_prop) + facet_wrap(~state, scales = "free_x")
+		p <- p + geom_violin(data = df_prop, aes(x = date, y = p, group = date))
+		p <- p + geom_pointrange(data =  df_data_prop, aes(x = date, y = mean, ymin = lower, ymax = upper), col = data_colour)
+		p <- p + theme_minimal() + ylab("Proprotion (%)") + xlab("Time")
+
+		print(p)
+		quartz()
+
+		ssm$plot$X_binom <- p
+
+	}
+
+
+	# remove states with NA values
+	if(any(is.na(df_X$value))){
+		
+		warnings("NA values in states are removed")
+
+		df_remove_index <- df_X %>% filter(is.na(value))
+		df_X <- df_X %>% anti_join(df_remove_index, "index")
+
+	}
 
 	if(collapse_erlang){
 
@@ -233,6 +327,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), ha
 		dots_summarize <- list(sprintf("%s(value)",stat))
 		dots_group_by <- setdiff(names(df_X), c("value","index"))
 		df_stat <- df_X %>% group_by_(.dots=dots_group_by) %>% summarize_(.dots=setNames(dots_summarize,"value"))
+
 	}
 
 	# any hat?
@@ -304,7 +399,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("median", "mean", "none"), ha
 		p <- p + geom_line(data=df_stat, aes(y=value))
 	}
 
-	p <- p + geom_point(data=df_data, aes(y=value), shape = 1)
+	p <- p + geom_point(data=df_data, aes(y=value), shape = 1, colour = data_colour)
 
 	print(p + theme_minimal())
 
