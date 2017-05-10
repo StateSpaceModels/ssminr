@@ -4,7 +4,7 @@
 \alias{plot_X}
 \title{Plot states}
 \usage{
-plot_X(ssm, path = NULL, id = NULL, stat = c("median", "mean", "none"),
+plot_X(ssm, path = NULL, id = NULL, stat = c("none", "median", "mean"),
   hat = NULL, scales = "free_y", fit_only = FALSE,
   collapse_erlang = TRUE)
 }

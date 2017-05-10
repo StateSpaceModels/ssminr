@@ -2,6 +2,7 @@
 
 S3method(print,ssm)
 export(binomial_obs)
+export(calibrate_smc)
 export(convert_symbol)
 export(diffusion)
 export(dirac)
