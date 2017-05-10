@@ -5,8 +5,8 @@
 \alias{ssm}
 \title{Build model in SSM}
 \usage{
-new_ssm(model_path, pop, data, start_date, inputs, force_input = NULL,
-  reactions, observations, erlang_shapes = NULL, states_in_SF = FALSE)
+new_ssm(model_path, pop, data, start_date, inputs, reactions, observations,
+  erlang_shapes = NULL, states_in_SF = FALSE)
 }
 \arguments{
 \item{model_path}{character, full path to model directory.}

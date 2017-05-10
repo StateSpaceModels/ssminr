@@ -21,7 +21,7 @@
 #' @importFrom plyr l_ply llply dlply
 #' @importFrom magrittr not
 #' @example inst/examples/SEIRD_erlang-example.r
-new_ssm <- function(model_path, pop, data, start_date, inputs, force_input=NULL, reactions, observations, erlang_shapes = NULL, states_in_SF = FALSE) {
+new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observations, erlang_shapes = NULL, states_in_SF = FALSE) {
 
 	# list directories
 	if(!file.exists(model_path)){
@@ -393,7 +393,6 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, force_input=NULL,
 		data = data,
 		start_date = start_date,
 		inputs = inputs,
-		forced_inputs = forced_inputs,
 		reactions = reactions,
 		observations = observations,
 		erlang_shapes=erlang_shapes),
