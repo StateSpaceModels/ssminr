@@ -117,16 +117,61 @@ get_state_variables <- function(reactions) {
 }
 
 
-# calibrate_smc <- function(ssm, n_replicate=10, n_parts=seq(100, 1000, 100), ...){
+#' Calibrate the number of particles for a SMC
+#'
+#' This function allows you to optimize the number of particles in your SMC. It displays how the variance and the mean of the likelihood estimator change with increasing number of particles. The idea is then to select an intermediate number of particles such that the estimator is stable, thus saving further computation burden in your PMCMC.
+#' @param  n_parts numeric vector containing the number of particles to test.
+#' @param  n_replicates for each value of \code{n_parts}, the number of replicates. The higher the more accurate the estimatation of the variance but it will take longer to compute.
+#' @param  plot  logical, if \code{TRUE} (default) the function will print 2 diagnostic plots.
+#' @param  ... other parameters to be passed to \code{\link{SMC}}.
+#' @inheritParams call_ssm
+#' @note This function will always run an SMC with PSR approximation since it's the only situation where you will be interested in calibrating the number of particles.
+#' @export
+#' @import ggplot2 dplyr tidyr
+#' @return a list of 3 elements:
+#'\itemize{
+#'	\item \code{smc} a \code{data_frame} containing one \code{ssm} object per SMC run.
+#'	\item \code{summary} a \code{data_frame} containing the SSM summary of each SMC run (loglikelihood etc.).
+#'	\item \code{plot} a list of 2 plots: \code{boxplot} and \code{mean_var}
+#'}
+calibrate_smc <- function(ssm, n_parts, n_replicates, plot = TRUE, ...) {
 
-# 	browser()
 
-# 	x <- smc(ssm, n_parts=n_parts[1], ...)
+	df_smc <- crossing(n_parts = unique(n_parts), replicate = 1:n_replicates) %>% group_by(n_parts, replicate) %>% do(ssm = smc(ssm, approx = "psr", n_parts = .$n_parts, ...))
 
-# 	x$summary[["log_likelihood"]]
+	df_summary <- df_smc %>% group_by(n_parts, replicate) %>% do(as_data_frame(t(.$ssm[[1]]$summary))) %>% ungroup
+
+	df_plot <- df_summary %>% select(-n_data, -n_parameters, -id, -replicate) %>% gather(variable, value, -n_parts)
+
+	p <- ggplot(df_plot, aes(x = n_parts, y = value, group = n_parts)) + facet_wrap(~variable, scales = "free_y")		
+	p <- p + geom_boxplot() + geom_jitter()
+	p <- p + theme_minimal()
+	p_boxplot <- p
+	if(plot){
+		quartz()
+		print(p_boxplot)
+	}
+
+	df_mean_var <- df_summary %>% select(n_parts, log_likelihood) %>% group_by(n_parts) %>% summarize(variance = var(log_likelihood), mean = mean(log_likelihood))
+
+	df_plot <- df_mean_var %>% gather(variable, value, -n_parts)
+
+	p <- ggplot(df_plot, aes(x = n_parts, y = value)) + facet_wrap(~variable, scales = "free_y")		
+	p <- p + geom_line() + geom_point()
+	p <- p + theme_minimal()
+	p_mean_var <- p
+
+	if(plot){
+		quartz()
+		print(p_mean_var)
+	}
+
+
+	ans <- list(smc = df_smc, summary = df_summary, plot = list(boxplot = p_boxplot, mean_var = p_mean_var))
 	
+	invisible(ans)
 
-# }
+}
 
 
 # df_tracer <- as.data.frame(my_mcmc_burn_thin_combined)
