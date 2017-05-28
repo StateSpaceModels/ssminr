@@ -333,15 +333,8 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 	# any hat?
 	if(!is.null(hat)){
 
-		prob <- c((1-hat)/2,(1+hat)/2) %>% unique %>% sort 
-		dots_summarize <- as.list(sprintf("stats::quantile(value, %s, type=1, na.rm = TRUE)",prob))	
-		dots_group_by <- setdiff(names(df_X), c("value","index"))
-
-		hat_label <- paste0(sort(hat)*100,"%")
-		dots_names <- c(sprintf("lower_%s",rev(hat_label)),sprintf("upper_%s",hat_label))
-
-		df_hat <- df_X %>% group_by_(.dots=dots_group_by) %>% summarize_(.dots=setNames(dots_summarize,dots_names)) %>% ungroup %>% gather(tmp, value, matches("lower|upper")) %>% separate(tmp,c("hat","level"),sep="_") %>% spread(hat, value)
-
+		df_hat <- get_hat(df_X, hat)
+		
 	}
 
 	if(!is.null(hat)){
@@ -389,6 +382,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 		p <- p + geom_line(aes(y=value, group=index), alpha=alpha)		
 	} else {
 
+		hat_label <- sort(unique(df_hat$level))
 		alpha_values <- seq(0.2,0.6,len=length(hat_label)) %>% rev
 		names(alpha_values) <- hat_label
 		p <- p + geom_ribbon(aes(ymin=lower, ymax=upper, alpha=level)) + scale_alpha_manual("Level", values=alpha_values)

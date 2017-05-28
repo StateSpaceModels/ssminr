@@ -174,6 +174,30 @@ calibrate_smc <- function(ssm, n_parts, n_replicates, plot = TRUE, ...) {
 }
 
 
+
+#'Compute hat for X
+#'
+#'Compute quantile intervals (hat) for states trajectories $X_t$.
+#' @param df_X A dataframe with 4 columns: date, index, variable and value. 
+#' @param  hat A numeric vector containing the quantiles to compute, centered on the median. For example \code{hat = c(0.5, 0.95)} will compute the interquartile range as well as the 95% credible interval.
+#' @export
+#' @return A dataframe
+get_hat <- function(df_X, hat) {
+
+
+	prob <- c((1-hat)/2,(1+hat)/2) %>% unique %>% sort 
+	dots_summarize <- as.list(sprintf("stats::quantile(value, %s, type=1, na.rm = TRUE)",prob))	
+	dots_group_by <- setdiff(names(df_X), c("value","index"))
+
+	hat_label <- paste0(sort(hat)*100,"%")
+	dots_names <- c(sprintf("lower_%s",rev(hat_label)),sprintf("upper_%s",hat_label))
+
+	df_hat <- df_X %>% group_by_(.dots=dots_group_by) %>% summarize_(.dots=setNames(dots_summarize,dots_names)) %>% ungroup %>% gather(tmp, value, matches("lower|upper")) %>% separate(tmp,c("hat","level"),sep="_") %>% spread(hat, value)
+
+	return(df_hat)
+}
+
+
 # df_tracer <- as.data.frame(my_mcmc_burn_thin_combined)
 
 
