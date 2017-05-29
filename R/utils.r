@@ -147,6 +147,7 @@ calibrate_smc <- function(ssm, n_parts, n_replicates, plot = TRUE, ...) {
 	p <- p + geom_boxplot() + geom_jitter()
 	p <- p + theme_minimal()
 	p_boxplot <- p
+	
 	if(plot){
 		quartz()
 		print(p_boxplot)

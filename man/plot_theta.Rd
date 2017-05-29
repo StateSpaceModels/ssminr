@@ -4,7 +4,8 @@
 \alias{plot_theta}
 \title{Plot priors and posteriors}
 \usage{
-plot_theta(ssm, path = NULL, id = NULL, x_limits = NULL)
+plot_theta(ssm, path = NULL, id = NULL, x_limits = NULL, keep = NULL,
+  drop = NULL, ...)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
@@ -12,6 +13,14 @@ plot_theta(ssm, path = NULL, id = NULL, x_limits = NULL)
 \item{path}{character, where to find \code{X_*.csv}. If \code{NULL} (default), use the \code{path} of the last block (e.g. \code{/pmcmc}).}
 
 \item{id}{numeric, indicate which \code{X_*.csv} to choose. If \code{NULL} (default), use the \code{id} of the last block (default to 0 in SSM).}
+
+\item{x_limits}{names list of min max values for plotting. Useful when posterior is much more concentrated than prior.}
+
+\item{keep}{names of the theta to plot. By default all theta are plotted.}
+
+\item{drop}{names of the theta to drop before plotting. By default all theta are plotted.}
+
+\item{...}{arguments passed to \code{\link{ggplot2::facet_wrap}}}
 }
 \value{
 a \code{ggplot} object

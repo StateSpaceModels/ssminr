@@ -508,10 +508,14 @@ plot_priors <- function(ssm, theta_names=NULL, quantile_limits=c(0.01,0.99), x_l
 #'Plot priors and posteriors distribution for all estimated parameters.
 #' @inheritParams call_ssm
 #' @inheritParams plot_X
+#' @param x_limits names list of min max values for plotting. Useful when posterior is much more concentrated than prior.
+#' @param keep names of the theta to plot. By default all theta are plotted.
+#' @param drop names of the theta to drop before plotting. By default all theta are plotted.
+#' @param ... arguments passed to \code{\link{ggplot2::facet_wrap}}
 #' @export
 #' @import ggplot2 tidyr dplyr readr
 #' @return a \code{ggplot} object
-plot_theta <- function(ssm, path=NULL, id=NULL, x_limits = NULL) {
+plot_theta <- function(ssm, path=NULL, id=NULL, x_limits = NULL, keep = NULL, drop = NULL, ...) {
 
 	if(is.null(path)){
 
@@ -548,16 +552,36 @@ plot_theta <- function(ssm, path=NULL, id=NULL, x_limits = NULL) {
 
 	}
 
-
 	df_posterior <- read_csv(file.path(path, trace_file), col_types = cols(.default = col_guess())) %>% 
 	gather(theta, value, -index, -fitness) %>% mutate(distribution = "posterior")  
 
-	# df_limits <- df_posterior %>% group_by(theta) %>% summarize(theta_min = min(value), theta_max = max(value))
-	
+	if(!is.null(x_limits)){
+		df_limits <- as_data_frame(x_limits) %>% mutate(boundary = c("min", "max")) %>% gather(theta, value, -boundary) %>% spread(boundary, value)
+		df_posterior_with_limits <- df_posterior %>% inner_join(df_limits, "theta") %>% filter(value > min, value < max)
+		df_posterior <- df_posterior %>% anti_join(df_posterior_with_limits, "theta") %>% bind_rows(df_posterior_with_limits)
+	}
+
+
+	# keep/drop theta
+	select_theta <- ssm$theta %>% names
+
+	if(!is.null(drop)){
+		select_theta <- select_theta %>% setdiff(drop)
+	}
+
+	if(!is.null(keep)){
+
+		select_theta <- select_theta %>% intersect(keep)
+
+	}
+
+	df_posterior <- df_posterior %>% filter(theta %in% select_theta)
+
+
 	# compute prior
-	df_prior <- plot_priors(ssm, quantile_limits=c(0.0001,0.9999), x_limits = x_limits, plot=FALSE) %>% mutate(distribution = "prior")  
+	df_prior <- plot_priors(ssm, quantile_limits=c(0.0001,0.9999), x_limits = x_limits, plot=FALSE) %>% mutate(distribution = "prior") %>% filter(theta %in% select_theta)  
 	
-	p <- ggplot(df_prior, aes(fill = distribution)) + facet_wrap(~theta, scales="free")
+	p <- ggplot(df_prior, aes(fill = distribution)) + facet_wrap(~theta, scales="free", ...)
 	p <- p + geom_area(data=df_prior, aes(x=x, y=density), alpha=0.4)
 	p <- p + geom_histogram(data=df_posterior, aes(x=value, y=..density..),alpha=0.6)
 	p <- p + scale_fill_discrete("Distribution", breaks=c("prior","posterior"))
