@@ -503,19 +503,7 @@ plot_priors <- function(ssm, theta_names=NULL, quantile_limits=c(0.01,0.99), x_l
 }
 
 
-#'Plot priors and posteriors
-#'
-#'Plot priors and posteriors distribution for all estimated parameters.
-#' @inheritParams call_ssm
-#' @inheritParams plot_X
-#' @param x_limits names list of min max values for plotting. Useful when posterior is much more concentrated than prior.
-#' @param keep names of the theta to plot. By default all theta are plotted.
-#' @param drop names of the theta to drop before plotting. By default all theta are plotted.
-#' @param ... arguments passed to \code{\link{ggplot2::facet_wrap}}
-#' @export
-#' @import ggplot2 tidyr dplyr readr
-#' @return a \code{ggplot} object
-plot_theta <- function(ssm, path=NULL, id=NULL, x_limits = NULL, keep = NULL, drop = NULL, ...) {
+get_trace <- function(ssm, path=NULL, id=NULL) {
 
 	if(is.null(path)){
 
@@ -554,6 +542,26 @@ plot_theta <- function(ssm, path=NULL, id=NULL, x_limits = NULL, keep = NULL, dr
 
 	df_posterior <- read_csv(file.path(path, trace_file), col_types = cols(.default = col_guess())) %>% 
 	gather(theta, value, -index, -fitness) %>% mutate(distribution = "posterior")  
+
+	return(df_posterior)
+}
+
+#'Plot priors and posteriors
+#'
+#'Plot priors and posteriors distribution for all estimated parameters.
+#' @inheritParams call_ssm
+#' @inheritParams plot_X
+#' @param x_limits names list of min max values for plotting. Useful when posterior is much more concentrated than prior.
+#' @param keep names of the theta to plot. By default all theta are plotted.
+#' @param drop names of the theta to drop before plotting. By default all theta are plotted.
+#' @param ... arguments passed to \code{\link{ggplot2::facet_wrap}}
+#' @export
+#' @import ggplot2 tidyr dplyr readr
+#' @return a \code{ggplot} object
+plot_theta <- function(ssm, path=NULL, id=NULL, x_limits = NULL, keep = NULL, drop = NULL, ...) {
+
+	df_posterior <- get_trace(ssm, path=NULL, id=NULL)
+	
 
 	if(!is.null(x_limits)){
 		df_limits <- as_data_frame(x_limits) %>% mutate(boundary = c("min", "max")) %>% gather(theta, value, -boundary) %>% spread(boundary, value)
@@ -594,6 +602,56 @@ plot_theta <- function(ssm, path=NULL, id=NULL, x_limits = NULL, keep = NULL, dr
 
 	invisible(ssm)
 	
+}
+
+
+
+
+#'2D highest posterior density region
+#'
+#'Given a sample from a multivariate posterior distribution, plot the bivariate region of highest marginal posterior density (HPD) for two variables with defined levels.
+#' @param trace either a \code{data.frame} or \code{mcmc} object.
+#' @param ... other arguments passed to \code{\link[emdbook]{HPDregionplot}}.
+#' @inheritParams call_ssm
+#' @inheritParams plot_X
+#' @inheritParams emdbook::HPDregionplot
+#' @note HPD levels are computed using the function \code{\link[emdbook]{HPDregionplot}} from the package \code{emdbook}.
+#' @export
+#' @import ggplot2
+#' @importFrom emdbook HPDregionplot
+plot_HPD_2D <- function(ssm, path=NULL, id=NULL, trace = NULL, theta, prob = c(0.95, 0.75, 0.5, 0.25, 0.1), xlab = NULL, ylab = NULL, plot = TRUE, ...) {
+
+	if(length(theta) != 2) {
+		stop(sQuote("theta"), " is not a vector of length 2", call. = FALSE)
+	}
+
+
+	if(is.null(trace)){
+		trace <- get_trace(ssm, path=NULL, id=NULL) %>% spread(theta, value)
+	}
+
+	list_HPD <- emdbook::HPDregionplot(trace, vars = theta, prob = prob, ...)
+	levels_HPD <- unique(sapply(list_HPD, function(x) {x$level}))
+	names(levels_HPD) <- paste0(prob*100, "%")
+
+	p <- ggplot(trace, aes_string(x = theta[1], y = theta[2]))
+	p <- p + stat_density2d(aes(alpha = ..level..), fill = "red", colour = "black", geom = "polygon") 
+	p <- p + scale_alpha_continuous("HPD", breaks = levels_HPD, guide = "legend", range = c(0.1, 0.45))
+
+	if(!is.null(xlab)) {
+		p <- p + xlab(xlab)         
+	}
+	if(!is.null(ylab)) {
+		p <- p + ylab(ylab)     
+	}
+
+	p <- p + theme_minimal() + guides(alpha = guide_legend(override.aes = list(colour = NA, alpha = seq(0.1, 0.9, length = length(levels_HPD)))))
+
+	if(plot) {
+		print(p)        
+	}
+
+	invisible(p)
 }
 
 
