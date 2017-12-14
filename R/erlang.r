@@ -115,7 +115,7 @@ make_erlang_reactions <- function(reactions, erlang_shapes) {
 
 
 
-make_erlang_inputs <- function(inputs, erlang_shapes) {
+make_erlang_inputs <- function(inputs, erlang_shapes, erlang_priors) {
 
 	# restrict to all erlang_states that are in inputs
 	erlang_shapes <- erlang_shapes[intersect(names(erlang_shapes), get_name(inputs))]	
@@ -127,6 +127,7 @@ make_erlang_inputs <- function(inputs, erlang_shapes) {
 	for(erlang_state in erlang_states){
 
 		erlang_shape <- erlang_shapes[erlang_state]
+		erlang_prior <- erlang_priors[erlang_state]
 		input <- inputs[erlang_state]
 
 		if(!is.null(input[[1]]$prior)){
@@ -134,13 +135,20 @@ make_erlang_inputs <- function(inputs, erlang_shapes) {
 			# keep original input for prior and generate erlang input with transformation
 			new_input <- input
 			
-			new_input[[1]]$transformation <- sprintf("(%s)/(%s)", input[[1]]$name, erlang_shape)
-			
-			new_input[[1]]$prior <- NULL
-			
-			# rescale initial value
-			if(!is.null(input[[1]]$value)){
-				new_input[[1]]$value <- sprintf("(%s)/(%s)", input[[1]]$value, erlang_shape)				
+			if(erlang_prior == "sum") {
+
+				new_input[[1]]$transformation <- sprintf("(%s)/(%s)", input[[1]]$name, erlang_shape)
+				new_input[[1]]$prior <- NULL
+
+				# rescale initial value
+				if(!is.null(input[[1]]$value)){
+					new_input[[1]]$value <- sprintf("(%s)/(%s)", input[[1]]$value, erlang_shape)				
+				}
+
+			} else {
+
+				# remove original input
+				inputs[erlang_state] <- NULL
 			}
 
 			input_erlang <- rep(new_input, erlang_shape)

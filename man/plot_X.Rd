@@ -5,7 +5,7 @@
 \title{Plot states}
 \usage{
 plot_X(ssm, path = NULL, id = NULL, stat = c("none", "median", "mean"),
-  hat = NULL, scales = "free_y", fit_only = FALSE,
+  hat = NULL, scales = "free_y", fit_only = FALSE, ran_only = FALSE,
   collapse_erlang = TRUE)
 }
 \arguments{
@@ -22,6 +22,8 @@ plot_X(ssm, path = NULL, id = NULL, stat = c("none", "median", "mean"),
 \item{scales}{character, should scales be \code{"fixed"}, \code{"free"}, or free in one dimension: \code{"free_x"}, \code{"free_y"} (the default).}
 
 \item{fit_only}{logical, whether to show only the fit to the data.}
+
+\item{ran_only}{logical, whether to show only the randomly generated data.}
 }
 \value{
 a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
