@@ -232,7 +232,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 
 	# keep observed states and observations at the data dates
 	
-	df_data_obs <- ssm$data %>% rename(state = time_series)
+	df_data_obs <- ssm$data %>% dplyr::rename(state = time_series)
 	df_data_ran_obs <- df_data_obs %>% mutate(state = sprintf("ran_%s", state))
 	df_data_state <- df_data_obs %>% filter(str_detect(state, "_obs")) %>% mutate(state = str_replace(state, "_obs", ""))
 
@@ -272,7 +272,7 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 		df_prop <- df_X_binomial %>% left_join(df_n, by = c("date", "state")) %>% mutate(p = value/n*100)
 
 		# binomial data + 95% CI
-		df_data_prop <- ssm$data %>% rename(state = time_series) %>% inner_join(df_n, by = c("date", "state")) %>% 
+		df_data_prop <- ssm$data %>% dplyr::rename(state = time_series) %>% inner_join(df_n, by = c("date", "state")) %>% 
 		group_by(date, state) %>% 
 		do(binom.confint(.$value, .$n, methods = "exact")) %>% 
 		ungroup %>% 
