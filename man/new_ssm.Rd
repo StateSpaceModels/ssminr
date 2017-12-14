@@ -6,7 +6,7 @@
 \title{Build model in SSM}
 \usage{
 new_ssm(model_path, pop, data, start_date, inputs, reactions, observations,
-  erlang_shapes = NULL, states_in_SF = FALSE)
+  erlang = NULL, states_in_SF = FALSE)
 }
 \arguments{
 \item{model_path}{character, full path to model directory.}
@@ -27,7 +27,11 @@ data are represented by \code{NA}.}
 
 \item{observations}{list of observations.}
 
-\item{erlang_shapes}{named vector with state variables as names and shapes of the corresponding erlang distribution as values (optional).}
+\item{erlang}{list of 2 (optional) elements : 
+\itemize{
+    \item\code{shapes} named vector with state variables as names and shapes of the corresponding erlang distribution as values. Default values to 1.
+    \item\code{priors} named vector with state variables as names and either \code{"sum"} or \code{"each"}  If \code{"sum"} a prior is defined for the sum of all the erlang sub-compartments and initial conditions are equally distributed. If \code{"each"} a prior is defined for each sub-compartment (using the same prior provided). Default values to \code{"sum"}.
+}}
 }
 \value{
 \code{ssm} object
@@ -67,7 +71,8 @@ SEIRD_reactions <- list(
 	reaction(from="I_D", to="D", description="death", rate="mu")
 	)
 
-Erlang_shapes <- c(E=2, I_D=3, I_R=1)
+erlang_shapes <- c(E=2, I_D=3, I_R=1)
+erlang_priors <- c(E="sum", I_D="each", I_R=1)
 
 SEIRD_observations <- list(
 	discretized_normal_obs(state="incidence", reporting="rho", overdispersion="phi")
@@ -89,7 +94,7 @@ my_ssm <- new_ssm(
 	inputs=SEIRD_inputs,
 	reactions=SEIRD_reactions,
 	observations=SEIRD_observations,
-	erlang_shapes=Erlang_shapes
+	erlang = list(shapes = erlang_shapes, priors = erlang_priors)
 	)
 
 # plot_data(my_ssm)

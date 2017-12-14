@@ -12,7 +12,11 @@
 #' @param inputs list of inputs.
 #' @param reactions list of reactions.
 #' @param observations list of observations.
-#' @param erlang_shapes named vector with state variables as names and shapes of the corresponding erlang distribution as values (optional).
+#' @param erlang list of 2 (optional) elements : 
+#' \itemize{
+#' 	\item\code{shapes} named vector with state variables as names and shapes of the corresponding erlang distribution as values. Default values to 1.
+#' 	\item\code{priors} named vector with state variables as names and either \code{"sum"} or \code{"each"}  If \code{"sum"} a prior is defined for the sum of all the erlang sub-compartments and initial conditions are equally distributed. If \code{"each"} a prior is defined for each sub-compartment (using the same prior provided). Default values to \code{"sum"}.
+#' } 
 #' @inheritParams r2ssm
 #' @return \code{ssm} object
 #' @export
@@ -21,7 +25,7 @@
 #' @importFrom plyr l_ply llply dlply
 #' @importFrom magrittr not
 #' @example inst/examples/SEIRD_erlang-example.r
-new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observations, erlang_shapes = NULL, states_in_SF = FALSE) {
+new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observations, erlang = NULL, states_in_SF = FALSE) {
 
 	# list directories
 	if(!file.exists(model_path)){
@@ -44,13 +48,16 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 		}
 	})
 
+	
 
 	# check erlang_shapes
+	erlang_shapes <- erlang$shapes
 	erlang_shapes <- erlang_shapes[erlang_shapes > 1]
 
 	if(length(erlang_shapes)==0){
 		
 		erlang_shapes <- NULL
+		erlang_priors <- NULL
 
 	} else {
 
@@ -59,9 +66,26 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 		if(length(x <- setdiff(names(erlang_shapes), state_variables))){
 
-			stop("The following elements of ", sQuote("erlang_shapes")," are not state variables: ", sQuote(x), call. = FALSE)
+			stop("The following elements of ", sQuote("erlang$shapes")," are not state variables: ", sQuote(x), call. = FALSE)
 			
 		}
+
+		# define priors
+		erlang_priors <- rep("sum", length(erlang_shapes))
+		names(erlang_priors) <- names(erlang_shapes)
+
+		erlang_priors_defined <- erlang$priors
+		erlang_priors_defined <- erlang_priors_defined[names(erlang_priors_defined) %in% names(erlang_shapes)]
+
+		if(length(x <- setdiff(names(erlang_priors_defined), state_variables))){
+
+			stop("The following elements of ", sQuote("erlang$priors")," are not state variables: ", sQuote(x), call. = FALSE)
+			
+		}
+
+
+		erlang_priors[names(erlang_priors_defined)] <- erlang_priors_defined
+
 	}
 
 
@@ -87,36 +111,11 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 	}) %>% unname
 	
-	# WRITE PRIORS ---------------------------------------------------------------------	
-	# and return prior list for R
-
-	priors <- plyr::llply(inputs, function(input){
-
-		# if(0){
-		# 	input <- find_element(inputs, "name", "N__pop_hcw")[[1]]
-		# }
-
-		if(!is.null(input$prior)){
-
-			# print(input$name)
-
-			input$prior %>% r2ssm_prior %>% rjson::toJSON(.) %>% write(file=file.path(dir_priors,paste0(input$name,".json")))
-
-			if(input$prior$dist!="dirac"){
-				prior <- input$prior
-				prior$name <- input$name
-				return(prior)	
-			}
-			
-		}
-	}) %>% remove_null
-
-
 	# CREATE INPUTS ---------------------------------------------------------------------
 	
 	if(!is.null(erlang_shapes)){
 		# make erlang
-		inputs <- make_erlang_inputs(inputs, erlang_shapes) 
+		inputs <- make_erlang_inputs(inputs, erlang_shapes, erlang_priors) 
 	}
 
 	remainder_state <- find_element(inputs, "tag", "remainder") %>% get_name
@@ -148,6 +147,31 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 		i_remainder <- which(get_name(ssm_inputs)%in%remainder_state)
 		ssm_inputs <- ssm_inputs[-i_remainder]
 	}
+
+
+	# WRITE PRIORS ---------------------------------------------------------------------	
+	# and return prior list for R
+
+	priors <- plyr::llply(inputs, function(input){
+
+		# if(0){
+		# 	input <- find_element(inputs, "name", "N__pop_hcw")[[1]]
+		# }
+
+		if(!is.null(input$prior)){
+
+			# print(input$name)
+
+			input$prior %>% r2ssm_prior %>% rjson::toJSON(.) %>% write(file=file.path(dir_priors,paste0(input$name,".json")))
+
+			if(input$prior$dist!="dirac"){
+				prior <- input$prior
+				prior$name <- input$name
+				return(prior)	
+			}
+			
+		}
+	}) %>% remove_null
 
 
 	# CREATE REACTIONS ---------------------------------------------------------------------
@@ -235,13 +259,17 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 		names(replace_remainder) <- remainder_state
 
-		reactions <- llply(reactions, function(reaction) {
+		for(x in remainder_state) {
 
-			reaction$rate <- reaction$rate %>% str_replace_all(replace_remainder)
+			reactions <- llply(reactions, function(reaction) {
 
-			return(reaction)
-		})
+				reaction$rate <- reaction$rate %>% str_replace_all(regex(sprintf("\\b%s\\b", x)), replace_remainder[x])
 
+				return(reaction)
+			})
+
+		}
+		
 	}
 
 	# CREATE OBSERVATIONS ---------------------------------------------------------------------
@@ -395,7 +423,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 		inputs = inputs,
 		reactions = reactions,
 		observations = observations,
-		erlang_shapes=erlang_shapes),
+		erlang = erlang),
 	class="ssm"))
 }
 

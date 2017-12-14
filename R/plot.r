@@ -155,12 +155,13 @@ plot_model <- function(ssm, collapse_erlang = TRUE, display=c("diagramme", "netw
 #' @param  hat numeric, vector of credible intervals, between 0 and 1, e.g. \code{hat=c(0.5, 0.95)} for 50 and 95\% credible intervals.
 #' @param  scales character, should scales be \code{"fixed"}, \code{"free"}, or free in one dimension: \code{"free_x"}, \code{"free_y"} (the default).
 #' @param  fit_only logical, whether to show only the fit to the data.
+#' @param  ran_only logical, whether to show only the randomly generated data.
 #' @inheritParams call_ssm
 #' @export
 #' @import ggplot2 tidyr dplyr readr
 #' @seealso \code{\link{plot_theta}}
 #' @return a \code{ssm} object updated with latest SSM output and ready to be piped into another SSM block.
-plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), hat=NULL, scales="free_y", fit_only=FALSE, collapse_erlang=TRUE) {
+plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), hat=NULL, scales="free_y", fit_only=FALSE, ran_only = FALSE, collapse_erlang=TRUE) {
 
 	stat <- match.arg(stat)
 
@@ -217,6 +218,10 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 	obs_var <- get_name(ssm$observations)
 	ran_obs_var <- sprintf("ran_%s", obs_var)
 
+	if(ran_only){
+		df_X <- df_X %>% filter(!state %in% obs_var)
+	}
+
 	# TODO find accumulators and bind them to state_variables and search in obs parameter (mean etc)
 	# accumulators should be extracted at compilation 
 	# here for simplicity we assume that observation names are of the form state_obs so state can easily be retrieved
@@ -236,8 +241,6 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 	df_X_obs <- df_X %>% filter(state %in% c(obs_var, obs_state, ran_obs_var)) %>% semi_join(df_data_date, c("date", "state"))
 
 	df_X <- df_X %>% anti_join(df_X_obs, "state") %>% bind_rows(df_X_obs)
-
-
 	
 # remove binomial observations
 	if(any(obs_dist == "binomial")) {
@@ -264,7 +267,6 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 		df_n_ran <- df_n %>% mutate(state = sprintf("ran_%s", state))
 
 		df_n <- df_n %>% bind_rows(df_n_ran)
-
 		
 		# binomial posterior
 		df_prop <- df_X_binomial %>% left_join(df_n, by = c("date", "state")) %>% mutate(p = value/n*100)
@@ -281,6 +283,11 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 		## add ran_
 		df_data_prop_ran <- df_data_prop %>% mutate(state = sprintf("ran_%s", state))
 		df_data_prop <- df_data_prop %>% bind_rows(df_data_prop_ran)
+
+		if(ran_only){
+			df_prop <- df_prop %>% filter(str_detect(state, "ran_"))
+			df_data_prop <- df_data_prop %>% filter(str_detect(state, "ran_"))
+		}
 
 		# plot
 		p <- ggplot(df_prop) + facet_wrap(~state, scales = "free_x")
