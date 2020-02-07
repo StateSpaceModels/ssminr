@@ -29,8 +29,8 @@ data(ebola_2014)
 data <- liberia1 %>% gather(time_series, value, -date)
 
 # the model will be created in the default temporary directory. Change the path to "wherever/you/want".
-# dir_model <- tempdir()
-dir_model <- path.expand("~/Desktop")
+dir_model <- tempdir()
+# dir_model <- path.expand("~/Desktop")
 
 my_ssm <- new_ssm(
 	model_path=file.path(dir_model,"SEIR_ssm"),
@@ -41,14 +41,6 @@ my_ssm <- new_ssm(
 	reactions=SEIR_reactions,
 	observations=SEIR_observations
 	)
-
-if(0){
-
-	l_ply(my_ssm$priors, print_prior)
-	purrr::walk(my_ssm$priors, print_prior)
-my_ssm_fit_ode <- my_ssm %>% pmcmc(iter=100)
-
-}
 
 # # Have fun.. 
 
