@@ -474,6 +474,12 @@
       "Source": "CRAN",
       "Hash": "32b894df8893259af194abdc2b1fc366"
     },
+    "rappdirs": {
+      "Package": "rappdirs",
+      "Version": "0.3.1",
+      "Source": "CRAN",
+      "Hash": "5bc532ab747c4d7c8b753ca9b7faee8d"
+    },
     "rcmdcheck": {
       "Package": "rcmdcheck",
       "Version": "1.3.3",
@@ -509,6 +515,12 @@
       "Version": "1.4.3",
       "Source": "CRAN",
       "Hash": "ac685130d1a25e3f6470960fd29c5693"
+    },
+    "reticulate": {
+      "Package": "reticulate",
+      "Version": "1.14",
+      "Source": "CRAN",
+      "Hash": "ccdf5de512f13568d6c5ee939ac974e1"
     },
     "rex": {
       "Package": "rex",
@@ -593,6 +605,12 @@
       "Version": "0.1.7",
       "Source": "CRAN",
       "Hash": "fc68fa34b8576eaa5a845a46ad75e214"
+    },
+    "ssminr": {
+      "Package": "ssminr",
+      "Version": "0.1",
+      "Source": "unknown",
+      "Hash": "c3ff21ce0c19c7d5c495009d72151d59"
     },
     "stringi": {
       "Package": "stringi",
