@@ -3,9 +3,7 @@
 \name{prior}
 \alias{prior}
 \alias{unif}
-\alias{prior}
 \alias{truncnorm}
-\alias{prior}
 \alias{dirac}
 \title{Some priors distributions}
 \usage{

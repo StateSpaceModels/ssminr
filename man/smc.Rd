@@ -4,14 +4,35 @@
 \alias{smc}
 \title{Run a SMC}
 \usage{
-smc(ssm, approx = c("ode", "sde", "psr"), dt = NULL, id = 0,
-  root = NULL, n_parts = NULL, n_thread = 1, iter = NULL,
-  n_obs = NULL, eps_max = NULL, eps_abs_integ = NULL,
-  eps_rel_integ = NULL, like_min = NULL, freeze_forcing = NULL,
-  interpolator = NULL, verbose = FALSE, warning = FALSE,
-  no_dem_sto = FALSE, no_white_noise = FALSE, no_diff = FALSE,
-  traj = TRUE, hat = FALSE, trace = TRUE, diag = TRUE, prior = FALSE,
-  no_filter = FALSE, seed_time = TRUE)
+smc(
+  ssm,
+  approx = c("ode", "sde", "psr"),
+  dt = NULL,
+  id = 0,
+  root = NULL,
+  n_parts = NULL,
+  n_thread = 1,
+  iter = NULL,
+  n_obs = NULL,
+  eps_max = NULL,
+  eps_abs_integ = NULL,
+  eps_rel_integ = NULL,
+  like_min = NULL,
+  freeze_forcing = NULL,
+  interpolator = NULL,
+  verbose = FALSE,
+  warning = FALSE,
+  no_dem_sto = FALSE,
+  no_white_noise = FALSE,
+  no_diff = FALSE,
+  traj = TRUE,
+  hat = FALSE,
+  trace = TRUE,
+  diag = TRUE,
+  prior = FALSE,
+  no_filter = FALSE,
+  seed_time = TRUE
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

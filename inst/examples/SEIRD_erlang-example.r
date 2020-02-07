@@ -41,8 +41,8 @@ data <- liberia1 %>% gather(time_series, value, -date)
 
 # the model will be created in the default temporary directory. Change the path to "wherever/you/want".
 # dir_model <- tempdir()
-# dir_model <- path.expand("~/Desktop")
-dir_model <- "/Users/Tonton/work/presentations/talks/2016_02_Princeton/"
+dir_model <- path.expand("~/Desktop")
+# dir_model <- "/Users/Tonton/work/presentations/talks/2016_02_Princeton/"
 
 my_ssm <- new_ssm(
 	model_path=file.path(dir_model,"SEIRD_erlang"),

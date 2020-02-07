@@ -42,6 +42,14 @@ my_ssm <- new_ssm(
 	observations=SEIR_observations
 	)
 
+if(0){
+
+	l_ply(my_ssm$priors, print_prior)
+	purrr::walk(my_ssm$priors, print_prior)
+my_ssm_fit_ode <- my_ssm %>% pmcmc(iter=100)
+
+}
+
 # # Have fun.. 
 
 # my_ssm_fit_ode <- my_ssm %>% pmcmc(iter=100000)

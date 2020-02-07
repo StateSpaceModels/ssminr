@@ -3,9 +3,7 @@
 \name{obs}
 \alias{obs}
 \alias{poisson_obs}
-\alias{obs}
 \alias{discretized_normal_obs}
-\alias{obs}
 \alias{binomial_obs}
 \title{Observation processes for SSM}
 \usage{

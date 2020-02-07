@@ -4,15 +4,39 @@
 \alias{pmcmc}
 \title{Run a Particle-MCMC}
 \usage{
-pmcmc(ssm, approx = c("ode", "sde", "psr"), dt = NULL, id = 0,
-  root = NULL, iter = NULL, n_parts = NULL, n_thread = 1,
-  n_obs = NULL, cooling = NULL, switch = NULL, eps_switch = NULL,
-  eps_max = NULL, eps_abs_integ = NULL, eps_rel_integ = NULL,
-  smooth = FALSE, alpha = NULL, like_min = NULL, freeze_forcing = NULL,
-  interpolator = NULL, verbose = FALSE, warning = FALSE,
-  no_dem_sto = FALSE, no_white_noise = FALSE, no_diff = FALSE,
-  traj = TRUE, n_traj = NULL, hat = FALSE, trace = TRUE, acc = TRUE,
-  seed_time = TRUE)
+pmcmc(
+  ssm,
+  approx = c("ode", "sde", "psr"),
+  dt = NULL,
+  id = 0,
+  root = NULL,
+  iter = NULL,
+  n_parts = NULL,
+  n_thread = 1,
+  n_obs = NULL,
+  cooling = NULL,
+  switch = NULL,
+  eps_switch = NULL,
+  eps_max = NULL,
+  eps_abs_integ = NULL,
+  eps_rel_integ = NULL,
+  smooth = FALSE,
+  alpha = NULL,
+  like_min = NULL,
+  freeze_forcing = NULL,
+  interpolator = NULL,
+  verbose = FALSE,
+  warning = FALSE,
+  no_dem_sto = FALSE,
+  no_white_noise = FALSE,
+  no_diff = FALSE,
+  traj = TRUE,
+  n_traj = NULL,
+  hat = FALSE,
+  trace = TRUE,
+  acc = TRUE,
+  seed_time = TRUE
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

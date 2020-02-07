@@ -231,7 +231,6 @@ plot_X <- function(ssm, path=NULL, id=NULL, stat=c("none", "median", "mean"), ha
 	names(obs_dist) <- obs_var
 
 	# keep observed states and observations at the data dates
-	
 	df_data_obs <- ssm$data %>% dplyr::rename(state = time_series)
 	df_data_ran_obs <- df_data_obs %>% mutate(state = sprintf("ran_%s", state))
 	df_data_state <- df_data_obs %>% filter(str_detect(state, "_obs")) %>% mutate(state = str_replace(state, "_obs", ""))
@@ -454,7 +453,7 @@ plot_data <- function(ssm, scales="free_y") {
 #'Plot priors
 #'
 #'Plot prior distribution as specified in \code{ssm} object.
-#' @param theta_names character, specify which theta priors to plot. By default (=\colde{NULL}) all theta priors are plotted.
+#' @param theta_names character, specify which theta priors to plot. By default (=\code{NULL}) all theta priors are plotted.
 #' @param quantile_limits numeric, vector of length 2 specifying the limits of the priors in terms of quantile. Default to the 1% and 99% quantiles (=\code{c(0.01, 0.99)}).
 #' @param x_limits numeric, vector of length 2 specifying the limits of the priors in terms of theta. Default to \code{NULL}.
 #' @param plot logical, if \code{FALSE} a dataframe of prior values will be returned insread iof a plot

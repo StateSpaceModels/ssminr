@@ -4,12 +4,29 @@
 \alias{kalman}
 \title{Run a Kalman filter}
 \usage{
-kalman(ssm, dt = NULL, id = 0, root = NULL, n_obs = NULL,
-  eps_abs_integ = NULL, eps_rel_integ = NULL, like_min = NULL,
-  freeze_forcing = NULL, interpolator = NULL, verbose = FALSE,
-  warning = FALSE, no_dem_sto = FALSE, no_white_noise = FALSE,
-  no_diff = FALSE, traj = TRUE, hat = FALSE, trace = TRUE,
-  diag = TRUE, prior = FALSE, seed_time = TRUE)
+kalman(
+  ssm,
+  dt = NULL,
+  id = 0,
+  root = NULL,
+  n_obs = NULL,
+  eps_abs_integ = NULL,
+  eps_rel_integ = NULL,
+  like_min = NULL,
+  freeze_forcing = NULL,
+  interpolator = NULL,
+  verbose = FALSE,
+  warning = FALSE,
+  no_dem_sto = FALSE,
+  no_white_noise = FALSE,
+  no_diff = FALSE,
+  traj = TRUE,
+  hat = FALSE,
+  trace = TRUE,
+  diag = TRUE,
+  prior = FALSE,
+  seed_time = TRUE
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

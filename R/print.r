@@ -16,8 +16,7 @@ print_prior <- function(prior) {
 #'Function to print basic information on the \code{ssm}
 #' @param x a \code{ssm} object, returned by \code{\link{new_ssm}}.
 #' @export
-#' @import dplyr
-#' @importFrom plyr l_ply
+#' @importFrom purrr walk
 print.ssm <- function(x, ...) {
 
 	ssm <- x
@@ -40,7 +39,7 @@ print.ssm <- function(x, ...) {
 
 	# prior
 	cat("prior:\n")
-	l_ply(ssm$priors, print_prior)
+	purrr::walk(ssm$priors, print_prior)
 	add_line()
 
 	# theta

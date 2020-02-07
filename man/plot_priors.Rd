@@ -4,13 +4,18 @@
 \alias{plot_priors}
 \title{Plot priors}
 \usage{
-plot_priors(ssm, theta_names = NULL, quantile_limits = c(0.01, 0.99),
-  x_limits = NULL, plot = TRUE)
+plot_priors(
+  ssm,
+  theta_names = NULL,
+  quantile_limits = c(0.01, 0.99),
+  x_limits = NULL,
+  plot = TRUE
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
 
-\item{theta_names}{character, specify which theta priors to plot. By default (=\colde{NULL}) all theta priors are plotted.}
+\item{theta_names}{character, specify which theta priors to plot. By default (=\code{NULL}) all theta priors are plotted.}
 
 \item{quantile_limits}{numeric, vector of length 2 specifying the limits of the priors in terms of quantile. Default to the 1% and 99% quantiles (=\code{c(0.01, 0.99)}).}
 

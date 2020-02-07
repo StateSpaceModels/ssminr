@@ -25,7 +25,7 @@ make_erlang_reactions <- function(reactions, erlang_shapes) {
 
 				reaction_erlang <- rep(reaction, erlang_shape)
 
-				reaction_erlang <- llply(seq_along(reaction_erlang), function(i) {
+				reaction_erlang <- purrr::map(seq_along(reaction_erlang), function(i) {
 
 					reaction <- reaction_erlang[[i]]
 					reaction$from <- erlang_name(erlang_state,i)
@@ -68,7 +68,7 @@ make_erlang_reactions <- function(reactions, erlang_shapes) {
 
 				}
 
-				reaction_erlang <- llply(seq_along(reaction_erlang), function(i) {
+				reaction_erlang <- purrr::map(seq_along(reaction_erlang), function(i) {
 
 					reaction <- reaction_erlang[[i]]
 					reaction$from <- erlang_name(erlang_state, i)

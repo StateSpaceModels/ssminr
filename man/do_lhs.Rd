@@ -4,8 +4,12 @@
 \alias{do_lhs}
 \title{Perform LHS}
 \usage{
-do_lhs(ssm, n, do = c("kalman", "kmcmc", "ksimplex", "mif", "pmcmc",
-  "simplex", "simul", "smc"), ...)
+do_lhs(
+  ssm,
+  n,
+  do = c("kalman", "kmcmc", "ksimplex", "mif", "pmcmc", "simplex", "simul", "smc"),
+  ...
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

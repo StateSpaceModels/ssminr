@@ -127,9 +127,9 @@ make_pop_struct <- function(pop, inputs, reactions, observations, names_shared_i
 	# struct input
 	names_var_pop <- setdiff(get_name(inputs), names_shared_inputs)
 
-	inputs_pop <- llply(inputs, function(input) {
+	inputs_pop <- purrr::map(inputs, function(input) {
 
-		input_pop <- llply(pop, add_pop_to_input, input=input, names_var_pop=names_var_pop)
+		input_pop <- purrr::map(pop, add_pop_to_input, input=input, names_var_pop=names_var_pop)
 
 	}) %>% unlist(recursive = FALSE) %>% unique
 
@@ -140,9 +140,9 @@ make_pop_struct <- function(pop, inputs, reactions, observations, names_shared_i
 	names_accumulators_pop <- get_element(reactions, "accumulators") %>% unlist %>% unique %>% setdiff(names_shared_inputs)
 	names_var_pop <- c(names_var_pop, names_accumulators_pop)
 
-	reactions_pop <- llply(reactions, function(reaction) {
+	reactions_pop <- purrr::map(reactions, function(reaction) {
 
-		reaction_pop <- llply(pop, add_pop_to_reaction, reaction=reaction, names_var_pop=names_var_pop)
+		reaction_pop <- purrr::map(pop, add_pop_to_reaction, reaction=reaction, names_var_pop=names_var_pop)
 
 	}) %>% unlist(recursive = FALSE) %>% unique
 
@@ -151,9 +151,9 @@ make_pop_struct <- function(pop, inputs, reactions, observations, names_shared_i
 	names_obs_pop <- get_name(observations) %>% unlist %>% unique %>% setdiff(names_shared_inputs)
 	names_var_pop <- c(names_var_pop, names_obs_pop)
 
-	observations_pop <- llply(observations, function(observation) {
+	observations_pop <- purrr::map(observations, function(observation) {
 
-		observation_pop <- llply(pop, add_pop_to_observation, observation=observation, names_var_pop=names_var_pop)
+		observation_pop <- purrr::map(pop, add_pop_to_observation, observation=observation, names_var_pop=names_var_pop)
 
 	}) %>% unlist(recursive = FALSE) %>% unique
 
@@ -166,7 +166,7 @@ make_pop_struct <- function(pop, inputs, reactions, observations, names_shared_i
 		names(erlang_shapes) <- pop
 	}
 
-	df_erlang_shapes <- ldply(erlang_shapes, function(x) {data_frame(state = names(x), shape = x)}, .id="pop")
+	df_erlang_shapes <- purrr::map_dfr(erlang_shapes, function(x) {data_frame(state = names(x), shape = x)}, .id="pop")
 
 	df_erlang_shapes_pop <- df_erlang_shapes %>% filter(state %in% names_var_pop) %>% mutate(state = pop_name(state, pop)) %>% select(-pop)
 	df_erlang_shapes_shared <- df_erlang_shapes %>% filter(!state %in% names_var_pop) %>% select(-pop) %>% distinct

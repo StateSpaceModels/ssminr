@@ -4,8 +4,15 @@
 \alias{plot_theta}
 \title{Plot priors and posteriors}
 \usage{
-plot_theta(ssm, path = NULL, id = NULL, x_limits = NULL, keep = NULL,
-  drop = NULL, ...)
+plot_theta(
+  ssm,
+  path = NULL,
+  id = NULL,
+  x_limits = NULL,
+  keep = NULL,
+  drop = NULL,
+  ...
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

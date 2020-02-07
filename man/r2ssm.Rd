@@ -3,11 +3,8 @@
 \name{r2ssm}
 \alias{r2ssm}
 \alias{r2ssm_prior}
-\alias{r2ssm}
 \alias{r2ssm_resources}
-\alias{r2ssm}
 \alias{ssm2r_resources}
-\alias{r2ssm}
 \alias{r2ssm_populations}
 \title{Convert R object into SSM object}
 \usage{

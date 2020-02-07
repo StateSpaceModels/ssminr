@@ -2,7 +2,8 @@
 #'
 #'Internal functions to convert R object into SSM 
 #' @param prior a list 
-#' @importFrom plyr rename llply 
+#' @importFrom dplyr recode
+#' @importFrom purrr map
 #' @name r2ssm
 #' @aliases r2ssm_prior
 r2ssm_prior <- function(prior) {
@@ -16,13 +17,15 @@ r2ssm_prior <- function(prior) {
 		truncnorm="normal"
 		)
 
-	dist_param <- plyr::rename(prior$args, c(a="lower",b="upper",min="lower",max="upper"),warn_missing=FALSE)
+	dist_param <- prior$args
+	names(dist_param) <- dplyr::recode(names(dist_param), a="lower", b="upper", min="lower", max="upper")
+
 	dist_param[!is.finite(unlist(dist_param))] <- NULL
 
-	dist_param <- plyr::llply(names(dist_param),function(param_name) {list(name=param_name,value=dist_param[[param_name]])})
+	dist_param <- purrr::map(names(dist_param),function(param_name) {list(name=param_name,value=dist_param[[param_name]])})
 
-	if( !is.null(prior$unit)){
-		dist_param <- plyr::llply(dist_param,function(x) {c(x,unitCode=prior$unit)})
+	if(!is.null(prior$unit)){
+		dist_param <- purrr::map(dist_param,function(x) {c(x,unitCode=prior$unit)})
 	}
 
 	prior_formated <- list(name=dist_name, distributionParameter=dist_param)
@@ -72,6 +75,8 @@ r2ssm_resources <- function(theta, covmat){
 
 #' @param ssm_theta a list (usually a theta.json of SSM parsed by \code{\link[rjson]{fromJSON}})
 #' @name r2ssm
+#' @importFrom purrr map_dfr
+#' @importFrom tibble column_to_rownames
 #' @aliases ssm2r_resources
 ssm2r_resources <- function(ssm_theta){
 
@@ -81,11 +86,8 @@ ssm2r_resources <- function(ssm_theta){
 	theta <- resources[[1]]$data %>% unlist
 
 	# covmat
-	covmat <- resources[[2]]$data %>% plyr::ldply(as.data.frame, .id="row_names")
-	rownames(covmat) <- covmat$row_names
-	covmat$row_names <- NULL
+	covmat <- resources[[2]]$data %>% purrr::map_dfr(as.data.frame, .id="rowname") %>% tibble::column_to_rownames()
 	covmat[is.na(covmat)] <- 0
-
 
 	if(length(resources)==3){
 		# summary
@@ -139,7 +141,7 @@ r2ssm_populations <- function(pop, state_variables, remainder=NULL, pop_size=NUL
 
 	} else {
 
-		pop_formated <- llply(pop, function(pop_x) {
+		pop_formated <- purrr::map(pop, function(pop_x) {
 
 			state_variables_x <- state_variables[str_detect(state_variables, sprintf("pop_%s", pop_x))]
 

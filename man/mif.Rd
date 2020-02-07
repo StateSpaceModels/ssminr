@@ -4,14 +4,38 @@
 \alias{mif}
 \title{Run a MIF}
 \usage{
-mif(ssm, approx = c("ode", "sde", "psr"), dt = NULL, id = 0,
-  root = NULL, n_parts = NULL, iter = NULL, n_obs = NULL,
-  cooling = NULL, switch = NULL, eps_switch = NULL, eps_max = NULL,
-  eps_abs_integ = NULL, eps_rel_integ = NULL, like_min = NULL,
-  heat = NULL, lag = NULL, freeze_forcing = NULL, interpolator = NULL,
-  verbose = FALSE, warning = FALSE, no_dem_sto = FALSE,
-  no_white_noise = FALSE, no_diff = FALSE, traj = TRUE, trace = TRUE,
-  diag = TRUE, prior = FALSE, ic_only = FALSE, seed_time = TRUE)
+mif(
+  ssm,
+  approx = c("ode", "sde", "psr"),
+  dt = NULL,
+  id = 0,
+  root = NULL,
+  n_parts = NULL,
+  iter = NULL,
+  n_obs = NULL,
+  cooling = NULL,
+  switch = NULL,
+  eps_switch = NULL,
+  eps_max = NULL,
+  eps_abs_integ = NULL,
+  eps_rel_integ = NULL,
+  like_min = NULL,
+  heat = NULL,
+  lag = NULL,
+  freeze_forcing = NULL,
+  interpolator = NULL,
+  verbose = FALSE,
+  warning = FALSE,
+  no_dem_sto = FALSE,
+  no_white_noise = FALSE,
+  no_diff = FALSE,
+  traj = TRUE,
+  trace = TRUE,
+  diag = TRUE,
+  prior = FALSE,
+  ic_only = FALSE,
+  seed_time = TRUE
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

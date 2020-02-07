@@ -4,9 +4,18 @@
 \alias{plot_HPD_2D}
 \title{2D highest posterior density region}
 \usage{
-plot_HPD_2D(ssm, path = NULL, id = NULL, trace = NULL, theta,
-  prob = c(0.95, 0.75, 0.5, 0.25, 0.1), xlab = NULL, ylab = NULL,
-  plot = TRUE, ...)
+plot_HPD_2D(
+  ssm,
+  path = NULL,
+  id = NULL,
+  trace = NULL,
+  theta,
+  prob = c(0.95, 0.75, 0.5, 0.25, 0.1),
+  xlab = NULL,
+  ylab = NULL,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
@@ -16,6 +25,12 @@ plot_HPD_2D(ssm, path = NULL, id = NULL, trace = NULL, theta,
 \item{id}{numeric, indicate which \code{X_*.csv} to choose. If \code{NULL} (default), use the \code{id} of the last block (default to 0 in SSM).}
 
 \item{trace}{either a \code{data.frame} or \code{mcmc} object.}
+
+\item{prob}{probability level}
+
+\item{xlab}{x axis label}
+
+\item{ylab}{y axis label}
 
 \item{...}{other arguments passed to \code{\link[emdbook]{HPDregionplot}}.}
 }

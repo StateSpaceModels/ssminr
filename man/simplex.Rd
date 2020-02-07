@@ -4,12 +4,29 @@
 \alias{simplex}
 \title{Run a Simplex}
 \usage{
-simplex(ssm, dt = NULL, id = 0, root = NULL, iter = NULL,
-  n_obs = NULL, size = NULL, eps_abs_integ = NULL, eps_rel_integ = NULL,
-  like_min = NULL, freeze_forcing = NULL, interpolator = NULL,
-  verbose = FALSE, warning = FALSE, no_dem_sto = FALSE,
-  no_white_noise = FALSE, no_diff = FALSE, trace = TRUE, prior = FALSE,
-  least_squares = FALSE, seed_time = TRUE)
+simplex(
+  ssm,
+  dt = NULL,
+  id = 0,
+  root = NULL,
+  iter = NULL,
+  n_obs = NULL,
+  size = NULL,
+  eps_abs_integ = NULL,
+  eps_rel_integ = NULL,
+  like_min = NULL,
+  freeze_forcing = NULL,
+  interpolator = NULL,
+  verbose = FALSE,
+  warning = FALSE,
+  no_dem_sto = FALSE,
+  no_white_noise = FALSE,
+  no_diff = FALSE,
+  trace = TRUE,
+  prior = FALSE,
+  least_squares = FALSE,
+  seed_time = TRUE
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

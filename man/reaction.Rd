@@ -2,20 +2,36 @@
 % Please edit documentation in R/reaction.r
 \name{reaction}
 \alias{reaction}
-\alias{reaction}
 \alias{reaction_split}
-\alias{reaction}
 \alias{reaction_NGM}
 \title{Create SSM reaction}
 \usage{
-reaction(from, to, description = NULL, rate, accumulators = NULL,
-  keywords = NULL)
+reaction(
+  from,
+  to,
+  description = NULL,
+  rate,
+  accumulators = NULL,
+  keywords = NULL
+)
 
-reaction_split(from, split_to, description = NULL, rate,
-  accumulators = NULL, keywords = NULL)
+reaction_split(
+  from,
+  split_to,
+  description = NULL,
+  rate,
+  accumulators = NULL,
+  keywords = NULL
+)
 
-reaction_NGM(from, to, description = NULL, NGM, accumulators = NULL,
-  keywords = NULL)
+reaction_NGM(
+  from,
+  to,
+  description = NULL,
+  NGM,
+  accumulators = NULL,
+  keywords = NULL
+)
 }
 \arguments{
 \item{from, to}{character, name of starting and ending state of the reaction}

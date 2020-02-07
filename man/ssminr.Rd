@@ -3,7 +3,6 @@
 \docType{package}
 \name{ssminr}
 \alias{ssminr}
-\alias{ssminr-package}
 \title{ssminr}
 \description{
 ssminr

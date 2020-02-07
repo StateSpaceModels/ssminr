@@ -4,9 +4,12 @@
 \alias{call_ssm}
 \title{Call to SSM}
 \usage{
-call_ssm(ssm, approx = c("ode", "sde", "psr"), do = c("kalman", "kmcmc",
-  "ksimplex", "mif", "pmcmc", "simplex", "simul", "smc"),
-  env = parent.frame())
+call_ssm(
+  ssm,
+  approx = c("ode", "sde", "psr"),
+  do = c("kalman", "kmcmc", "ksimplex", "mif", "pmcmc", "simplex", "simul", "smc"),
+  env = parent.frame()
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

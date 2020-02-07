@@ -4,9 +4,17 @@
 \alias{plot_X}
 \title{Plot states}
 \usage{
-plot_X(ssm, path = NULL, id = NULL, stat = c("none", "median", "mean"),
-  hat = NULL, scales = "free_y", fit_only = FALSE, ran_only = FALSE,
-  collapse_erlang = TRUE)
+plot_X(
+  ssm,
+  path = NULL,
+  id = NULL,
+  stat = c("none", "median", "mean"),
+  hat = NULL,
+  scales = "free_y",
+  fit_only = FALSE,
+  ran_only = FALSE,
+  collapse_erlang = TRUE
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}

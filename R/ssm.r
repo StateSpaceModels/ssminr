@@ -22,7 +22,7 @@
 #' @export
 #' @aliases ssm
 #' @import dplyr rjson
-#' @importFrom plyr l_ply llply dlply
+#' @importFrom purrr map map_dfr map_lgl map_chr
 #' @importFrom magrittr not
 #' @example inst/examples/SEIRD_erlang-example.r
 new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observations, erlang = NULL, states_in_SF = FALSE) {
@@ -42,12 +42,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 	# create directories
 	dir_list <- c(dir_data,dir_priors)
 
-	plyr::l_ply(dir_list,function(dir) {
-		if(!file.exists(dir)){
-			dir.create(dir)
-		}
-	})
-
+	purrr::walk(dir_list, dir.create, showWarnings = FALSE)
 	
 
 	# check erlang_shapes
@@ -97,19 +92,23 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 	}
 
 	# keep what you need
-	data <- data %>% mutate(date=as.Date(date), time_series = as.character(time_series)) %>% filter(date > start_date) 
+	data <- data %>% mutate(date=as.Date(date), .y = as.character(time_series)) %>% filter(date > start_date) 
 
 	# write data
-	ssm_data <- plyr::dlply(data, "time_series", function(df) {
+	ssm_data <- data %>% group_by(time_series) %>% dplyr::group_map(~{
 
-		time_series <- first(df$time_series)
-		data_path <- file.path(dir_data, paste0("ts_",time_series,".csv"))
+		time_series_name <- first(.y)
+		data_path <- file.path(dir_data, paste0("ts_",time_series_name,".csv"))
 
-		df %>% mutate(date=as.character(date)) %>% spread(time_series, value) %>% write.csv(data_path,row.names=FALSE)
+		rename_value <- "value"
+		names(rename_value) <- time_series_name
 
-		return(list(name=time_series,require=list(path=data_path,fields=c("date",time_series))))
+		.x %>% mutate(date=as.character(date)) %>% dplyr::rename(!!!rename_value)	%>% write.csv(data_path,row.names=FALSE)
 
-	}) %>% unname
+		return(list(name=time_series_name,require=list(path=data_path,fields=c("date",time_series_name))))
+
+	})
+
 	
 	# CREATE INPUTS ---------------------------------------------------------------------
 	
@@ -121,7 +120,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 	remainder_state <- find_element(inputs, "tag", "remainder") %>% get_name
 	pop_size_theta <- find_element(inputs, "tag", "pop_size") %>% get_name
 
-	ssm_inputs <- plyr::llply(inputs,function(input) {
+	ssm_inputs <- purrr::map(inputs,function(input) {
 
 		if(!is.null(input$prior)){
 			input$prior <- NULL
@@ -142,6 +141,9 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 		input %>% remove_null %>% return
 	})
 
+
+
+
 	# remove remainder
 	if(length(remainder_state)){
 		i_remainder <- which(get_name(ssm_inputs)%in%remainder_state)
@@ -151,20 +153,14 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 	# WRITE PRIORS ---------------------------------------------------------------------	
 	# and return prior list for R
-
-	priors <- plyr::llply(inputs, function(input){
-
-		# if(0){
-		# 	input <- find_element(inputs, "name", "N__pop_hcw")[[1]]
-		# }
+	priors <- purrr::map(inputs, function(input){
 
 		if(!is.null(input$prior)){
 
 			# print(input$name)
-
 			input$prior %>% r2ssm_prior %>% rjson::toJSON(.) %>% write(file=file.path(dir_priors,paste0(input$name,".json")))
 
-			if(input$prior$dist!="dirac"){
+			if(input$prior$dist!="dirac"){				
 				prior <- input$prior
 				prior$name <- input$name
 				return(prior)	
@@ -177,7 +173,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 	# CREATE REACTIONS ---------------------------------------------------------------------
 
 	# unlist reaction if needed
-	need_split <- sapply(reactions, function(x) length(x$to)>1) 
+	need_split <- purrr::map_lgl(reactions, ~length(.x$to)>1) 
 
 	if(any(need_split)){
 
@@ -199,7 +195,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 	if(any(need_split)){
 
-		i_split <- get_element(reactions, "split") %>% sapply(is.null) %>% magrittr::not() %>% which
+		i_split <- get_element(reactions, "split") %>% purrr::map_lgl(is.null) %>% magrittr::not() %>% which
 		
 		for(i in i_split){
 
@@ -212,7 +208,8 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 	# divide the rate of linear reactions to compensate for density-dependence in SSM
 	# TODO: implement a special function or a way to tell SSM how to deal with linear reactions
-	i_linear <- get_element(reactions, "keywords") %>% sapply(function(x) "linear"%in%x) %>% which
+	
+	i_linear <- get_element(reactions, "keywords") %>% purrr::map_lgl(~"linear"%in%.x) %>% which
 	
 	for(i in i_linear){
 		reactions[[i]]$rate <- sprintf("(%s)/(%s)", reactions[[i]]$rate, reactions[[i]]$from)		
@@ -225,7 +222,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 	# NOTE: this fix prevent the use of sde approx and kalman medthods in SSM
 	# TODO: SSM should be able to deal with state within special functions	
 
-	i_while <- get_element(reactions, "keywords") %>% sapply(function(x) "while_from_is_positive"%in%x) %>% which
+	i_while <- get_element(reactions, "keywords") %>% purrr::map_lgl(~"while_from_is_positive"%in%.x) %>% which
 	
 	if(length(i_while)){
 		# flag to use hack form compilation
@@ -252,8 +249,8 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 	# TODO: SSM should deal with that automatically
 	if(length(remainder_state)){
 
-		replace_remainder <- sapply(ssm_populations, function(ssm_population) {
-			sprintf("(%s - %s)", ssm_population$remainder$pop_size, ssm_population$composition %>% setdiff(ssm_population$remainder$name) %>% paste(collapse=" - "))
+		replace_remainder <- purrr::map_chr(ssm_populations, ~{
+			sprintf("(%s - %s)", .x$remainder$pop_size, .x$composition %>% setdiff(.x$remainder$name) %>% paste(collapse=" - "))
 
 		})
 
@@ -261,7 +258,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 		for(x in remainder_state) {
 
-			reactions <- llply(reactions, function(reaction) {
+			reactions <- purrr::map(reactions, function(reaction) {
 
 				reaction$rate <- reaction$rate %>% str_replace_all(regex(sprintf("\\b%s\\b", x)), replace_remainder[x])
 
@@ -269,13 +266,15 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 			})
 
 		}
+
+
 		
 	}
 
 	# CREATE OBSERVATIONS ---------------------------------------------------------------------
 
 	# SSM currently needs the same start time for all observations.
-	ssm_observations <- plyr::llply(observations, function(obs) {obs$start=as.character(start_date); return(obs)})
+	ssm_observations <- purrr::map(observations, ~{.x$start=as.character(start_date); return(.x)})
 
 	# CREATE SDE ON INPUTS ---------------------------------------------------------------------
 
@@ -292,7 +291,7 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 	if((n_sde <- length(sde))){
 
 		# drift
-		drift <- llply(sde, function(x) {
+		drift <- purrr::map(sde, function(x) {
 
 			tmp <- list(name=x$name, f=0)
 
@@ -371,11 +370,11 @@ new_ssm <- function(model_path, pop, data, start_date, inputs, reactions, observ
 
 	# 1- replace all reactions rates by 1
 		ssm_json_hack <- ssm_json
-		ssm_json_hack$reactions <- llply(ssm_json_hack$reactions, function(reaction) {
+		ssm_json_hack$reactions <- purrr::map(ssm_json_hack$reactions, ~{
 
-			reaction$rate <- "1"
+			.x$rate <- "1"
 
-			return(reaction)
+			return(.x)
 
 		})
 

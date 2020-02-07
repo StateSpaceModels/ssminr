@@ -4,12 +4,30 @@
 \alias{simul}
 \title{Simulate ssm}
 \usage{
-simul(ssm, approx = c("ode", "sde", "psr"), dt = NULL, id = 0,
-  root = NULL, n_thread = 1, n_parts = NULL, start = NULL, end = NULL,
-  eps_abs_integ = NULL, eps_rel_integ = NULL, freeze_forcing = NULL,
-  freq = NULL, interpolator = NULL, verbose = FALSE, warning = FALSE,
-  no_dem_sto = FALSE, no_white_noise = FALSE, no_diff = FALSE,
-  traj = TRUE, hat = FALSE, seed_time = TRUE)
+simul(
+  ssm,
+  approx = c("ode", "sde", "psr"),
+  dt = NULL,
+  id = 0,
+  root = NULL,
+  n_thread = 1,
+  n_parts = NULL,
+  start = NULL,
+  end = NULL,
+  eps_abs_integ = NULL,
+  eps_rel_integ = NULL,
+  freeze_forcing = NULL,
+  freq = NULL,
+  interpolator = NULL,
+  verbose = FALSE,
+  warning = FALSE,
+  no_dem_sto = FALSE,
+  no_white_noise = FALSE,
+  no_diff = FALSE,
+  traj = TRUE,
+  hat = FALSE,
+  seed_time = TRUE
+)
 }
 \arguments{
 \item{ssm}{a \code{ssm} object, returned by \code{\link{new_ssm}}.}
